@@ -1,10 +1,5 @@
 """G Duplikate über alle Datenträger: exakt (SHA-256), Formatvarianten, beinahe gleich (pHash)."""
-from html import escape
-
-from IPython.display import HTML
-
 from .basis import *  # noqa: F401,F403
-from .anzeige import balken, kacheln, neben
 
 # G0 Funktion: Gruppen speichern
 def gruppen_speichern(art, df):
@@ -81,8 +76,8 @@ def exakte_duplikate():
         zeilen += [("O-" + o.fingerabdruck[:12], o.platte_id, o.ordner, o.dateien, o.bytes) for o in gruppe]
         ordnergruppen.append({"kopien": len(gruppe), "dateien": gruppe[0].dateien, "gb": round(gruppe[0].bytes / 1e9, 2),
                               "überzählig gb": round(gruppe[0].bytes * (len(gruppe) - 1) / 1e9, 2),
-                              "fundorte": "<br>".join(escape(f"{o.platte_id}: {o.ordner or '(ganze Platte)'}") for o in gruppe)})
-    with db() as con:                                 # für I (Dashboard) und Notebook 2
+                              "fundorte": " | ".join(f"{o.platte_id}: {o.ordner or '(ganze Platte)'}" for o in gruppe)})
+    with db() as con:                                 # für I (Dashboard)
         alt = con.execute("SELECT COUNT(DISTINCT gruppe_id) FROM ordnergruppe").fetchone()[0]
         con.execute("DELETE FROM ordnergruppe")
         con.executemany("INSERT INTO ordnergruppe VALUES (?,?,?,?,?)", zeilen)
@@ -91,7 +86,7 @@ def exakte_duplikate():
         ordnergruppen = pd.DataFrame(ordnergruppen).sort_values(["überzählig gb", "kopien"], ascending=False)
         print(f"\nOrdner, die mehrfach vorliegen (ganzer Ordner mit Unterordnern, gleiche Inhalte): {len(ordnergruppen):,} Gruppen, "
               f"zusammen {ordnergruppen['überzählig gb'].sum():.1f} GB überzählig. Die 25 größten:")
-        zeige(HTML(ordnergruppen.head(25).to_html(index=False, escape=False)))
+        zeige(ordnergruppen.head(25))
 
 
 def formatvarianten():
@@ -112,7 +107,7 @@ def formatvarianten():
         varianten["endung"] = varianten.relpfad.map(lambda p: Path(p).suffix.lower().lstrip(".") or "(ohne)")
         kombi = varianten.groupby("gruppe_id").endung.agg(lambda e: " + ".join(sorted(set(e)))).value_counts().head(15)
         print("Häufigste Kombinationen von Formaten:")
-        neben(kombi.to_frame("gruppen"), balken(kombi, "Gruppen je Formatkombination"))
+        zeige(kombi.to_frame("gruppen"))
         beispiel = varianten[varianten.gruppe_id.isin(varianten.gruppe_id.drop_duplicates().head(3))]
         zeige(beispiel[["gruppe_id", "platte_id", "relpfad", "aufnahme"]])
 
@@ -161,11 +156,6 @@ def beinahe_gleiche(schwelle=4):
         if (groesse > 30).any():
             print(f"⚠ {(groesse > 30).sum()} sehr große Gruppen (über 30 Inhalte): oft Grafiken mit wenig Struktur. "
                   "Bei Bedarf die Schwelle senken.")
-        print("\nBeispiele zum Prüfen der Schwelle (je Zeile eine Gruppe, Zahl = abweichende Bits zum nächsten Bild):")
-        erste = dateien.drop_duplicates("sha256").set_index("sha256").relpfad
-        for gid in list(groesse.index[:3]) + list(groesse.index[-3:]):
-            teil = h[h.gruppe_id == gid].head(6)
-            kacheln([(s, f"{a} · {kuerzen(erste.get(s, ''), 50)}") for s, a in zip(teil.sha256, teil.abstand)], breite=130)
 
 
 def gruppen_ueberblick():

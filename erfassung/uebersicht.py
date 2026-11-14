@@ -3,17 +3,15 @@ import base64
 import io
 from html import escape
 
-from IPython.display import HTML
-
 from .basis import *  # noqa: F401,F403
-from .anzeige import LINIENFARBE, TEXTFARBE
-from .basis import im_notebook as IM_NOTEBOOK   # teil() hat einen Parameter gleichen Namens
 
 # I1 Funktionen: Dashboard sammeln, Formatgruppen, Farben, interaktive Diagramme (Plotly)
 import plotly.graph_objects as go
 import plotly.io as pio
 from PIL import Image, ImageOps
 from plotly.offline import get_plotlyjs
+
+TEXTFARBE, LINIENFARBE = "#52514e", "#e4e3df"          # Schrift und Gitter der Diagramme
 
 # Farben: Reihen in fester Reihenfolge; Duplikatarten, Ampel und Datumsstufen überall gleich
 FARBEN = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"]
@@ -81,24 +79,11 @@ def tabelle_html(df, schluessel, klick=None):
     return f'<div class="bd-tabelle-behaelter" data-quelle="{schluessel}"></div>'
 
 
-def teil(reiter, titel, inhalt, text="", breit=True, klick=None, im_notebook=None):
-    """Zeigt einen Teil im Notebook und merkt ihn für das Dashboard (I9) vor.
+def teil(reiter, titel, inhalt, text="", breit=True, klick=None):
+    """Merkt einen Teil für das Dashboard (I9) vor.
     inhalt: Plotly-Diagramm, Tabelle (DataFrame, im Dashboard durchsuchbar) oder HTML.
-    breit=False: im Dashboard halbe Breite. im_notebook: statt inhalt im Notebook zeigen (z. B. bei der Treemap)."""
+    breit=False: im Dashboard halbe Breite."""
     schluessel = "t" + hashlib.sha1(f"{reiter}|{titel}".encode()).hexdigest()[:10]
-    if IM_NOTEBOOK():                            # im Hintergrundlauf nur fürs Dashboard sammeln
-        zeige(HTML(f"<h4>{escape(titel)}</h4>"))
-        if text:
-            print(text)
-        zeigen = inhalt if im_notebook is None else im_notebook
-        if isinstance(zeigen, go.Figure):
-            zeigen.show(config=KONFIG)
-        elif isinstance(zeigen, pd.DataFrame):
-            zeige(zeigen.head(15))
-            if len(zeigen) > 15:
-                print(f"… {len(zeigen):,} Zeilen, alle im Dashboard (durchsuchbar).")
-        else:
-            zeige(HTML(zeigen))
     if isinstance(inhalt, go.Figure):
         html = inhalt.to_html(full_html=False, include_plotlyjs=False, config=KONFIG, div_id=schluessel)
     elif isinstance(inhalt, pd.DataFrame):
@@ -354,8 +339,7 @@ def dashboard_erstellen():
         in_anton = bestand[bestand.anton_status == "in Anton"]
         zahlen.insert(4, (de(len(in_anton)), "schon in Anton",
                           f"{de(gb(in_anton.groesse), 1)} GB, Auszug vom {anton_stand.stand[0].split('/')[0]}"))
-    teil("Überblick", "Kennzahlen", kennzahlen(zahlen),
-         im_notebook=pd.DataFrame(zahlen, columns=["Wert", "Kennzahl", "Erläuterung"]).to_html(index=False))
+    teil("Überblick", "Kennzahlen", kennzahlen(zahlen))
 
     dateien = alle.pivot_table(index="platte_id", columns="status", values="relpfad", aggfunc="size", fill_value=0)
     volumen = alle.pivot_table(index="platte_id", columns="status", values="groesse", aggfunc="sum", fill_value=0) / 1e9
@@ -415,8 +399,7 @@ def dashboard_erstellen():
         og = ordnergruppen.groupby("gruppe_id").agg(kopien=("ordner", "size"), bytes=("bytes", "first"))
         zahlen.append((de(len(og)), "Ordner mehrfach", f"{de(((og.kopien - 1) * og.bytes).sum() / 1e9, 1)} GB überzählig"))
     teil("Dubletten", "Dubletten in Zahlen", kennzahlen(zahlen),
-         "Stufen überschneiden sich (eine Datei kann exakt gleich und zugleich beinahe gleich sein), daher nicht addieren.",
-         im_notebook=pd.DataFrame(zahlen, columns=["Wert", "Kennzahl", "Erläuterung"]).to_html(index=False))
+         "Stufen überschneiden sich (eine Datei kann exakt gleich und zugleich beinahe gleich sein), daher nicht addieren.")
 
     # Wo? Treemap: jede Datei ein Rechteck (gezeichnet von dashboard.js), Daten kompakt als Listen
     beilagen["treemap"] = als_json(treemap_daten(alle))
@@ -436,7 +419,7 @@ def dashboard_erstellen():
          "Jede Datei ist ein Rechteck (Fläche = Größe), Ordner sind umrandet; gefärbt sind zunächst nur überzählige Kopien. "
          "Ein einfarbiger Block: ganzer Ordner doppelt; "
          "verstreute Flecken: einzelne Dateien. Maus auf eine Datei: die anderen Exemplare ihrer Gruppe werden rot umrandet. "
-         "Klick: in den Ordner zoomen; zurück über die Pfadleiste.", im_notebook=je_ordner)
+         "Klick: in den Ordner zoomen; zurück über die Pfadleiste.")
     teil("Dubletten", "Ordner mit überzähligen Dateien", je_ordner,
          "Je Ordner (ohne Unterordner): wie viele Dateien dort überzählig sind und warum. Spaltenkopf anklicken zum Sortieren.")
 
@@ -629,16 +612,8 @@ def dashboard_erstellen():
     teil("Bestand", "Ordnertiefe", balken_plotly({"Dateien": tiefe}, "Dateien je Ordnertiefe (0 = oberste Ebene)", waagerecht=False),
          breit=False)
     etikett = platten.set_index("platte_id").etikett_text.fillna("").str.strip()
-    for platte_id, (b, eintraege) in ordnerbaum(bestand, gruppen).items():
+    for platte_id, (_, eintraege) in ordnerbaum(bestand, gruppen).items():
         beilagen[f"baum-{platte_id}"] = als_json({"platte": platte_id, "ordner": eintraege})
-
-        # Im Notebook: die ersten zwei Ebenen, alle Duplikatarten
-        oben = b[b.ort.map(len) <= 2].copy()
-        oben["Ordner"] = oben.ort.map(lambda o: "/".join(o) or "(ganzer Datenträger)")
-        oben["GB"] = (oben.bytes / 1e9).round(2)
-        oben["andere Ordner %"] = (oben.al_gleich / oben.dateien * 100).round(0)
-        oben["andere Datenträger %"] = (oben.al_andere / oben.dateien * 100).round(0)
-        oben = oben.rename(columns={"dateien": "Dateien", "al_platten": "welche Datenträger"})
         reiter = f"Ordner {platte_id}"
         dashboard.setdefault(reiter, {})
         text = ("Ordner aufklappen per Klick. Je Ordner mit allen Unterordnern: Anteil der Dateien, deren Inhalt auch in einem "
@@ -648,8 +623,7 @@ def dashboard_erstellen():
                 "100 % auf anderen Datenträgern heißt: der ganze Ordner ist anderswo vorhanden.")
         if etikett.get(platte_id):
             text += f" Etikett des Datenträgers: „{' / '.join(etikett[platte_id].splitlines())}“."
-        teil(reiter, f"Ordnerbaum {platte_id}", f'<div class="bd-baum-behaelter" data-quelle="baum-{platte_id}"></div>', text,
-             im_notebook=oben[["Ordner", "Dateien", "GB", "andere Ordner %", "andere Datenträger %", "welche Datenträger"]])
+        teil(reiter, f"Ordnerbaum {platte_id}", f'<div class="bd-baum-behaelter" data-quelle="baum-{platte_id}"></div>', text)
     felder = {"aufnahme": "Aufnahmedatum", "hersteller": "Kamera", "urheber": "Urheber", "copyright": "Copyright",
               "titel": "Titel", "beschreibung": "Beschreibung", "schlagworte": "Schlagworte", "gps_breite": "GPS"}
     bilder = bestand[bestand.gruppe.isin(["Bild", "Kamera-RAW"])]

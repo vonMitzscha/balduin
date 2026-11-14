@@ -198,7 +198,7 @@
     </div>`;
   }
 
-  // Archivfähigkeit in zwei Teilen: eigene Regeln (Ampel) und NARA (Risiko des Formats), wie Notebook 1, I
+  // Archivfähigkeit in zwei Teilen: eigene Regeln (Ampel) und NARA (Risiko des Formats)
   function archiv(d) {
     const e = d.analyse.archiv.eigene, n = d.analyse.archiv.nara, pl = d.bewertung.platten;
     const ohneDup = ["ohne_duplikate", "davon ohne Dubletten", "zahl"];
@@ -548,7 +548,7 @@
 
   function anton(d) {
     const a = d.analyse.anton;
-    if (!a.stand) return `<div class="db-raster">${karte("Anton", `<div class="leise">Noch kein Bestand aus Anton geladen (Notebook 1, G5b).</div>`, true)}</div>`;
+    if (!a.stand) return `<div class="db-raster">${karte("Anton", `<div class="leise">Noch kein Bestand aus Anton geholt (Registrierung/Analyse: „Bestand aus Anton holen“).</div>`, true)}</div>`;
     const s = a.stand;
     return `<div class="db-raster">
       ${karte("Abgleich je Datenträger", stapel(d.bewertung.platten.map((p) => ({ name: p.id, werte: a.je_platte?.[p.id] || {} })), ANTON), true,

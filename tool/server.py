@@ -1,7 +1,7 @@
 """Balduin: schlankes lokales Web-Tool zum Sichten und Bewerten der Platten (docs/plan.md, Entscheidungen 28.10.2026).
 
 Erfassung (Stufe 2 des Konzepts vom 29.10.2026): Datenträger wählen, Angaben machen, den ganzen Ablauf aus
-Notebook 1 als Hintergrundlauf starten (erfassung/lauf.py), Fortschritt je Schritt ansehen, abbrechen, fortsetzen.
+Die Analyse als Lauf starten (erfassung/lauf.py), Fortschritt je Schritt ansehen, abbrechen, fortsetzen.
 
 Bewertung: Bäume aller Platten mit Balken (Archivfähigkeit, Bewertungsstand, Dubletten),
 Inspektor mit Metadaten, Vorschaubildern, gleichen Ordnern und Dateien anderswo; Entscheidungen
@@ -102,7 +102,7 @@ ARTEN = ("exakt", "variante", "beinahe")
 AMPELN = ("grün", "gelb", "rot")
 F5_KENNUNG = "yolox_s+yunet"      # Modelle von F5 wie KENNUNG in erfassung/personen.py; ältere Ergebnisse gelten als offen
 
-# wie in Notebook 1, A1/A2: Verwaltungsdateien von macOS und Windows gehören nicht zum Bestand
+# Verwaltungsdateien von macOS und Windows gehören nicht zum Bestand
 SYSTEMDATEIEN = {".DS_Store", "Thumbs.db", "desktop.ini", ".localized"}
 
 
@@ -355,7 +355,7 @@ class Bestand:
         return con
 
     def schreibend(self):
-        """Verbindung zum Schreiben; mit `with` gilt: alles oder nichts. Wartet bis 15 s, falls ein Notebook schreibt."""
+        """Verbindung zum Schreiben; mit `with` gilt: alles oder nichts. Wartet bis 15 s, falls ein Lauf schreibt."""
         con = sqlite3.connect(self.db_pfad, timeout=15)
         con.row_factory = sqlite3.Row
         return SchreibVerbindung(con, self.geschrieben)
@@ -1686,7 +1686,7 @@ class Erfassung:
             if "E" in offen[p]:
                 offen[p]["E"] = e.get(p, 0)
             offen[p]["E4"] = e4.get(p, 0) if offen[p].get("D1") == 0 else None
-        # F: gelaufen im Notebook (scanlauf) oder im Tool; nach neuen Prüfsummen (D1 offen) gilt F wieder als offen
+        # F: gelaufen (scanlauf); nach neuen Prüfsummen (D1 offen) gilt F wieder als offen
         f_fertig = {z[0] for z in con.execute("SELECT platte_id FROM scanlauf WHERE art = 'vorschau' AND ende IS NOT NULL")}
         f_fertig |= {z[0] for z in con.execute("SELECT l.platte_id FROM lauf_schritt s JOIN lauf l USING (lauf_id) "
                                                "WHERE s.schritt = 'F' AND s.status = 'fertig'")}
@@ -1755,7 +1755,7 @@ class Erfassung:
 
     def gleich_je_platte(self, con):
         """Je Platte A und andere Platte B: wie viele Dateien von A bitgleich (gleiche SHA-256) auch auf B liegen.
-        Dateien ab 1 KB ohne Systemdateien, wie beim Plattenvergleich in Notebook 1 (C2); nur Platten im Projekt.
+        Dateien ab 1 KB ohne Systemdateien; nur Platten im Projekt.
         Für den Hinweis „als Kopie vermerken“; neu gerechnet, wenn sich die Datenbank geändert hat."""
         stand = self.bestand.db_stand()
         if stand == self.gleich_stand:
@@ -2042,7 +2042,7 @@ class Erfassung:
         return {"ok": True, **antwort}
 
     def abbrechen(self, lauf_id):
-        """Wie ■ im Notebook: Der laufende Schritt hört an seiner nächsten Prüfstelle auf, Ergebnisse bleiben gespeichert.
+        """Wie Ctrl+C: Der laufende Schritt hört an seiner nächsten Prüfstelle auf, Ergebnisse bleiben gespeichert.
         Auf dem Mac zuerst das Signal: Der Lauf hält beim Schreiben oft die Sperre der Datenbank, die Marke käme dann zu
         spät. Unter Windows gibt es kein solches Signal; dort liest die Abbruchwache des Laufs die Marke (erfassung/lauf.py),
         darum wird sie notfalls wiederholt geschrieben, bis die Datenbank frei ist."""
@@ -2171,7 +2171,7 @@ def projekt_argumente(projekt):
 
 
 def lauf_aufrufen(befehl, *weitere, timeout=180, eingabe=None):
-    """Kurze Abfrage über erfassung/lauf.py (dieselben Funktionen wie Notebook 1); Antwort als JSON.
+    """Kurze Abfrage über erfassung/lauf.py (dieselben Funktionen wie die Läufe); Antwort als JSON.
     eingabe: Text für stdin (Geheimes wie der Anton-Token, damit es in keiner Prozessliste steht)."""
     ergebnis = subprocess.run(system.lauf_befehl(befehl, *weitere),
                               cwd=CODE, capture_output=True, text=True, encoding="utf-8", errors="replace",
@@ -2215,7 +2215,7 @@ ANSICHTEN = ("erfassung", "bewertung", "vorlauf", "erschliessung", "export")
 
 
 def zuletzt_merken(pfad, name):
-    """Geöffnetes Projekt an den Anfang der Liste; „projekt“ ist auch die Vorgabe für Notebook 1 (A1).
+    """Geöffnetes Projekt an den Anfang der Liste; „projekt“ = zuletzt geöffnet.
     Das zuletzt genutzte Modul des Projekts bleibt erhalten."""
     alte = zuletzt_lesen()["liste"]
     vorher = next((e for e in alte if e["pfad"] == str(pfad)), {})

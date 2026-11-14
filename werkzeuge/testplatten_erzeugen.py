@@ -12,7 +12,7 @@ Aufruf im Projektordner:  python werkzeuge/testplatten_erzeugen.py [Zielordner]
                           (ohne Angabe testplatten/ im Code-Ordner; die automatischen Tests geben einen Ordner im
                           Temp-Verzeichnis an, tests/conftest.py)
 Im Tool dann:             ./Balduin.command --volumes "$PWD/testplatten"
-(Notebook 1, B1:          MOUNTPUNKT = Path("testplatten/HD01"))
+(in Balduin als Ordner registrieren: testplatten/HD01)
 """
 import os
 import random

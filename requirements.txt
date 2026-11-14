@@ -1,10 +1,7 @@
 # Laufzeit: was Balduin und seine Läufe brauchen (geht ins Paket, Entscheidung 13.11.2026).
-# Entwicklung (Notebook, Tests, Git-Filter): requirements-entwicklung.txt
+# Entwicklung (Tests): requirements-entwicklung.txt
 pandas
 numpy
-matplotlib        # Diagramme der Ansichten (erfassung/anzeige.py)
-ipython           # HTML-Ausgaben der Ansichten (IPython.display), auch außerhalb des Notebooks
-jinja2            # Tabellen als HTML (pandas Styler)
 pillow            # F Vorschaubilder (pHash wird mit numpy berechnet)
 plotly            # I Dashboard (interaktive Diagramme)
 openpyxl          # G5 Auszug aus Anton (Excel) lesen

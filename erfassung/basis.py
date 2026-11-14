@@ -1,7 +1,7 @@
-"""Grundlagen der Erfassung (bisher Notebook 1, Abschnitt A): Projekt, Datenbank, Hilfsfunktionen, Speicherplatz.
+"""Grundlagen der Erfassung (Schritt A): Projekt, Datenbank, Hilfsfunktionen, Speicherplatz.
 
 Alle Schritte des Pakets arbeiten mit dem Projekt, das `oeffnen()` einstellt (Objekt `P`, Pfade als Attribute).
-Die übrigen Dateien holen sich alles von hier mit `from .basis import *`, wie früher Abschnitt A im Notebook.
+Die übrigen Dateien holen sich alles von hier mit `from .basis import *`.
 """
 import csv
 import hashlib
@@ -29,7 +29,7 @@ from vorlauf.schema import SCHEMA_VORLAUF
 from erfassung import system
 from export.schema import SCHEMA_EXPORT, tabellen_umstellen
 
-CODE = Path(__file__).resolve().parent.parent        # Ordner mit Tool, Notebooks und vorgaben/ (im Git)
+CODE = Path(__file__).resolve().parent.parent        # Ordner mit Tool und vorgaben/ (im Git bzw. im Paket)
 MODELLE = CODE / "modelle"                           # Modelle der Bildanalyse (nicht im Git; werkzeuge/modelle_laden.py)
 PROJEKTE = system.projekte_vorgabe()                 # Vorgabe-Speicherort für Projekte (Git: neben dem Code)
 ZULETZT = system.zuletzt_datei()                     # zuletzt geöffnete Projekte; schreibt das Tool
@@ -517,7 +517,7 @@ def datenbank_einrichten():
 def db():
     """Öffnet die Datenbank des Projekts: `with db() as con: …` speichert am Ende und schließt wieder."""
     if not hasattr(P, "db_pfad"):
-        raise RuntimeError("Kein Projekt geöffnet: erst erfassung.oeffnen(…) aufrufen (Notebook 1, A1).")
+        raise RuntimeError("Kein Projekt geöffnet: erst erfassung.oeffnen(…) aufrufen.")
     con = sqlite3.connect(P.db_pfad, timeout=WARTEN_SPERRE)
     try:
         yield con
@@ -617,21 +617,15 @@ def protokolliere(abschnitt, objekt, feld, alt, neu):
                     (jetzt(), abschnitt, objekt, feld, str(alt), str(neu)))
 
 
-# --- Ausgabe: im Notebook Tabellen und Diagramme, im Hintergrundlauf nur Text ---
-
-def im_notebook():
-    try:
-        from IPython import get_ipython
-    except ImportError:
-        return False
-    return get_ipython() is not None
-
+# --- Ausgabe ins Log des Laufs ---
 
 def zeige(*objekte):
-    """Zeigt Tabellen, HTML oder Diagramme im Notebook; außerhalb (Hintergrundlauf des Tools) geschieht nichts."""
-    if im_notebook():
-        from IPython.display import display
-        display(*objekte)
+    """Gibt Text und Tabellen als Text aus; im Lauf landet das im Log (logs/…)."""
+    for o in objekte:
+        if isinstance(o, (pd.DataFrame, pd.Series)):
+            print(o.to_string(max_rows=20, max_cols=12))
+        else:
+            print(o)
 
 
 def kuerzen(text, laenge=42):

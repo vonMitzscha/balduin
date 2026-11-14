@@ -1,4 +1,4 @@
-"""Erfassung der Platten (bisher Notebook 1, Abschnitte A–I): je Schritt eine Datei.
+"""Erfassung der Datenträger (Modul 1, Schritte B–I): je Schritt eine Datei.
 
     import erfassung as e
     e.oeffnen()                                  # Projekt öffnen (A)
@@ -6,7 +6,7 @@
     e.schnellscan.schnellscan("HD07", Path("/Volumes/…"))
     …
 
-Notebook 1 ruft diese Funktionen je Abschnitt auf; das Tool Balduin startet sie später im Hintergrund.
+Balduin startet sie als Lauf im Hintergrund (erfassung/lauf.py).
 """
 from . import (anton, archiv, duplikate, formate, metadaten, personen, platte, pruefsummen, schnellscan, texte,
                uebersicht, vergleich, virenscan, vorschau)

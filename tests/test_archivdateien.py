@@ -536,7 +536,7 @@ def test_appledouble_neben_einem_zip_ist_kein_archiv(archivplatte):
     assert zeilen(schnellscan.ARCHIVE_UNGEPRUEFT, "HD01")[0][1] == 0
 
 
-def test_bereit_nennt_keine_zelle_des_notebooks(tmp_path, capsys, monkeypatch):
+def test_bereit_nennt_keinen_schalter_umschalten(tmp_path, capsys, monkeypatch):
     """Die Meldung erscheint auch im Lauf in Balduin; dort gibt es keine Zelle UMSCHALTEN."""
     from erfassung import platte
     monkeypatch.setattr(platte, "ist_schreibgeschuetzt", lambda p: False)

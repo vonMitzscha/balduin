@@ -1,6 +1,6 @@
 """Daten für das Dashboard des Tools und den daraus gespeicherten Bericht (docs/plan.md, Entscheidung 29.10.2026).
 
-Rechnet wie Notebook 1, Abschnitt I, aus der Datenbank: Bestand (Formate, Zeitraum), Archivfähigkeit (eigene Regeln
+Rechnet aus der Datenbank: Bestand (Formate, Zeitraum), Archivfähigkeit (eigene Regeln
 und NARA getrennt), Duplikate (mit Treemap), Ordnerbaum je Platte, Anton, Probleme, Platten, Scanläufe und Protokoll. Ergebnis ist ein dict, das sich als
 JSON ausgeben lässt; die Bewertung (wirksame Entscheidungen) und den Stand der Analyse ergänzt das Tool.
 Aufruf durch das Tool: python -m erfassung.lauf dashboard --projekt …
@@ -117,7 +117,7 @@ def daten():
                            "fundorte": [f"{p}: {o or '(ganze Platte)'}" for p, o in sorted(zip(t.platte_id, t.ordner))]})
         ordner.sort(key=lambda o: -o["ueberzaehlig"])
 
-    # ---- Ordnerbaum je Platte (alle Duplikatarten und nur exakt gleich, wie Notebook 1, I)
+    # ---- Ordnerbaum je Platte (alle Duplikatarten und nur exakt gleich)
     baum = {p: e for p, (_, e) in ordnerbaum(bestand, gruppen).items()} if len(bestand) else {}
 
     # ---- Anton: Status je Platte, Bestände in Anton
@@ -132,7 +132,7 @@ def daten():
                                                             platten=("platte_id", lambda p: ", ".join(sorted(set(p)))))
                                     .reset_index().sort_values("dateien", ascending=False), 50)
 
-    # ---- Probleme (wie Notebook 1, I8)
+    # ---- Probleme (I8)
     gefuellt = lambda s: s.fillna("").str.strip() != ""
     ohne_mount = lambda s: s.fillna("").str.replace(system.MOUNTPFAD_MUSTER, "(Datei)", regex=True)
     teile = [scanfehler.assign(bereich="Verzeichnis: nicht lesbar", meldung=scanfehler.fehler)]

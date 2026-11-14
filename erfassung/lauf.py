@@ -4,7 +4,7 @@ Das Tool (tool/server.py) startet ihn in einer eigenen Sitzung; er läuft weiter
     python -m erfassung.lauf erfassen --projekt … --lauf 12
 Den Auftrag (Platte, Mountpunkt, Etikett …) liest er aus der Tabelle lauf, den Fortschritt je Schritt schreibt er in
 lauf_schritt, alle Ausgaben in logs/erfassung_<lauf>_<platte>.log. Abbrechen: Das Tool setzt lauf.abbrechen = 1 und
-schickt auf dem Mac SIGINT, wie ■ im Notebook; unter Windows liest die Abbruchwache des Laufs die Marke und unterbricht
+schickt auf dem Mac SIGINT (wie Ctrl+C); unter Windows liest die Abbruchwache des Laufs die Marke und unterbricht
 ihn an derselben Stelle (Entscheidung 09.11.2026). Der laufende Schritt hört an seiner nächsten Prüfstelle auf, alles
 bis dahin bleibt gespeichert. Ohne Mountpunkt (Fortsetzen, Platte nicht angeschlossen) entfallen die Schritte mit Platte (B bis F).
 Auftrag „schritte“: nur diese Schritte (Kürzel), samt Pflicht-Folgeschritten (FOLGESCHRITTE, z. B. G → H); jeder macht
@@ -62,7 +62,7 @@ class Uebersprungen(Exception):
     """Ein Schritt entfällt mit Begründung, z. B. weil die Arbeitsplatte nicht angeschlossen ist."""
 
 
-# ---------- Schritte: je einer wie ein Abschnitt im Notebook; a = Auftrag ----------
+# ---------- Schritte; a = Auftrag ----------
 
 def schritt_b(a):
     mountpunkt = Path(a["mountpunkt"])
@@ -175,7 +175,7 @@ def schritt_i(a):
     uebersicht.dashboard_erstellen()
 
 
-# Kürzel (wie in Notebook 1, intern), Name (im Tool, gleich wie in tool/web/erfassung.js), Funktion
+# Kürzel (intern, auch in Log und Protokoll), Name (im Tool, gleich wie in tool/web/erfassung.js), Funktion
 SCHRITTE = [("B", "Registrierung", schritt_b), ("C", "Verzeichnis", schritt_c),
             ("D1", "Prüfsummen", schritt_d1), ("D2", "Formate", schritt_d2),
             ("D3", "Virenscan", schritt_d3), ("E", "Metadaten", schritt_e), ("E4", "Texte", schritt_e4),

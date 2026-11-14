@@ -1,4 +1,4 @@
-// Registrierung/Analyse (Code: Erfassung): Datenträger wählen, Angaben machen, den Ablauf aus Notebook 1 im Hintergrund starten und verfolgen.
+// Registrierung/Analyse (Code: Erfassung): Datenträger wählen, Angaben machen, die Analyse im Hintergrund starten und verfolgen.
 // Nutzt die Hilfen aus app.js ($, esc, zahl, bytes, holen, senden, standLaden).
 "use strict";
 
@@ -524,20 +524,20 @@ function antonVorab() {
 }
 
 // ---------- Registrierte Platte: Angaben ansehen und ändern ----------
-// Schritte je Platte, gleiche Namen wie erfassung/lauf.py; nb = Abschnitt in Notebook 1; platte = liest die Platte;
+// Schritte je Platte, gleiche Namen wie erfassung/lauf.py; platte = liest die Platte;
 // braucht = Voraussetzungen (Hinweis); folgt = Pflicht-Folgeschritte einer Auswahl (wie FOLGESCHRITTE in erfassung/lauf.py)
 const SCHRITTE = [
-  { k: "C", name: "Verzeichnis", nb: "C1", platte: true, braucht: [], hilfe: "liest nur das Verzeichnis des Datenträgers (Pfad, Größe, Datum)" },
-  { k: "D1", name: "Prüfsummen", nb: "D1", platte: true, braucht: ["C"], hilfe: "liest jede Datei einmal ganz (SHA-256, MD5)" },
-  { k: "D2", name: "Formate", nb: "D2", platte: true, braucht: ["D1"], hilfe: "erkennt das Format am Inhalt (PRONOM)" },
-  { k: "D3", name: "Virenscan", nb: "D3", platte: true, braucht: ["D1"], hilfe: "prüft jeden Inhalt einmal auf Schadsoftware; gilt für alle Datenträger mit diesem Inhalt" },
-  { k: "E", name: "Metadaten", nb: "E", platte: true, braucht: ["D1", "D3"], hilfe: "liest alle eingebetteten Metadaten, speichert sie vollständig und bestimmt das beste Datum" },
-  { k: "E4", name: "Texte", nb: "E4", platte: true, braucht: ["D1", "D3"], hilfe: "liest den Text der Dokumente (PDF, Word, PowerPoint, OpenDocument, RTF, HTML, Text) und mögliche Titel; ohne Texterkennung, Bild-PDFs bleiben ohne Text" },
-  { k: "F", name: "Vorschaubilder", nb: "F", platte: true, braucht: ["D2", "D3"], hilfe: "erzeugt die Vorschaubilder (im Projektordner oder auf dem Datenträger für Vorschaubilder)" },
-  { k: "F5", name: "Personen", nb: "F5", platte: false, braucht: ["F"], hilfe: "erkennt Personen und Gesichter (Porträts) auf den Vorschaubildern der Fotos (optional, in den Einstellungen an „Registrierung/Analyse“ einschalten)" },
-  { k: "G", name: "Dubletten", nb: "G1–G4", platte: false, braucht: ["D1", "E", "F"], folgt: ["H"], hilfe: "vergleicht alle Datenträger: exakte Kopien, Formatvarianten, beinahe gleiche Bilder" },
-  { k: "G5", name: "Anton-Abgleich", nb: "G5", platte: false, braucht: ["D1"], hilfe: "gleicht die MD5 jeder Datei mit dem geladenen Bestand aus Anton ab" },
-  { k: "H", name: "Archivfähigkeit", nb: "H", platte: false, braucht: ["D2", "D3", "E", "F", "G"], hilfe: "Ampel je Datei, NARA-Risiko daneben, Leitdatei je Dublettengruppe" },
+  { k: "C", name: "Verzeichnis", platte: true, braucht: [], hilfe: "liest nur das Verzeichnis des Datenträgers (Pfad, Größe, Datum)" },
+  { k: "D1", name: "Prüfsummen", platte: true, braucht: ["C"], hilfe: "liest jede Datei einmal ganz (SHA-256, MD5)" },
+  { k: "D2", name: "Formate", platte: true, braucht: ["D1"], hilfe: "erkennt das Format am Inhalt (PRONOM)" },
+  { k: "D3", name: "Virenscan", platte: true, braucht: ["D1"], hilfe: "prüft jeden Inhalt einmal auf Schadsoftware; gilt für alle Datenträger mit diesem Inhalt" },
+  { k: "E", name: "Metadaten", platte: true, braucht: ["D1", "D3"], hilfe: "liest alle eingebetteten Metadaten, speichert sie vollständig und bestimmt das beste Datum" },
+  { k: "E4", name: "Texte", platte: true, braucht: ["D1", "D3"], hilfe: "liest den Text der Dokumente (PDF, Word, PowerPoint, OpenDocument, RTF, HTML, Text) und mögliche Titel; ohne Texterkennung, Bild-PDFs bleiben ohne Text" },
+  { k: "F", name: "Vorschaubilder", platte: true, braucht: ["D2", "D3"], hilfe: "erzeugt die Vorschaubilder (im Projektordner oder auf dem Datenträger für Vorschaubilder)" },
+  { k: "F5", name: "Personen", platte: false, braucht: ["F"], hilfe: "erkennt Personen und Gesichter (Porträts) auf den Vorschaubildern der Fotos (optional, in den Einstellungen an „Registrierung/Analyse“ einschalten)" },
+  { k: "G", name: "Dubletten", platte: false, braucht: ["D1", "E", "F"], folgt: ["H"], hilfe: "vergleicht alle Datenträger: exakte Kopien, Formatvarianten, beinahe gleiche Bilder" },
+  { k: "G5", name: "Anton-Abgleich", platte: false, braucht: ["D1"], hilfe: "gleicht die MD5 jeder Datei mit dem geladenen Bestand aus Anton ab" },
+  { k: "H", name: "Archivfähigkeit", platte: false, braucht: ["D2", "D3", "E", "F", "G"], hilfe: "Ampel je Datei, NARA-Risiko daneben, Leitdatei je Dublettengruppe" },
 ];
 const SCHRITT = Object.fromEntries(SCHRITTE.map((s) => [s.k, s]));
 

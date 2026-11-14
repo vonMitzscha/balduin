@@ -1,7 +1,6 @@
 # Umgebung
 .venv/
 __pycache__/
-.ipynb_checkpoints/
 .DS_Store
 
 # Arbeitsdaten (nicht im Git)

@@ -36,7 +36,7 @@ from pathlib import Path
 HIER = Path(__file__).resolve().parent
 CODE = HIER.parent
 
-# Was vom Code ins Paket geht (Ordner mit „/“); Tests, Werkzeuge, Notebook und Docs bleiben draußen
+# Was vom Code ins Paket geht (Ordner mit „/“); Tests, Werkzeuge und Docs bleiben draußen
 KOPIEREN = ["erfassung/", "vorlauf/", "export/", "tool/", "vorgaben/", "LICENSE", "LIZENZ-ZUSATZ.md", "LICENSES/",
             "REUSE.toml", "README.md", "requirements.txt", "modelle/LIESMICH.md"]
 CODE_ORDNER = ["erfassung", "vorlauf", "export", "tool"]
