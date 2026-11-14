@@ -16,7 +16,7 @@
 
 ---
 
-Schon lange machen sie den berühmt-berüchtigten Banenankisten in Archivmagazinen still und heimliche Konkurenz: die Sammlung digitaler Daträger. Festplatten akurat gestapelt, haufenweise USB-Sticks oder sauber geschichtet glitzrige CD-Roms. Darauf tausende von Fotos, `Präsentation_final.pptx`und `Präsentation_final_wirklich_fertig.pptx` oder Ordner vom Kaliber `Backup_alt_NICHT LÖSCHEN`. Kennen Sie noch `.flv`-Dateien? Terrabyte an Archivarsalpträumen. 
+Schon lange machen sie den berühmt-berüchtigten Banenankisten in Archivmagazinen still und heimlich Konkurenz: die Sammlung digitaler Daträger. Festplatten akurat gestapelt, haufenweise USB-Sticks oder sauber geschichtet glitzrige CD-Roms. Darauf tausende von Fotos, `Präsentation_final.pptx`und `Präsentation_final_wirklich_fertig.pptx` oder Ordner vom Kaliber `Backup_alt_NICHT LÖSCHEN`. Kennen Sie noch `.flv`-Dateien? Terrabyte an Archivarsalpträumen. 
 Drum denkt man sich, die liegen da gut, denn es gibt ganz andere dringede Baustellen im Archiv. Aber ein USB-Stick ist kein digitales Archiv! 
 
 Hier kommt **Balduin** ins Spiel. Es erfindet das Rad nicht neu, aber bringt alle Werkzeuge mit, die es braucht, um den schieren Datenmengen habhaft zu werden und macht daraus einem geordneten, transparenten und flexiblen Prozess, der ohne großes Technikverständnis bedient werden kann.
@@ -26,19 +26,11 @@ Baduin herunterladen, im Browser öffnen, Datenträger anhängen, lesend Analyse
 Derzeit setzt Balduin voraus, dass Ihr Archiv das Archivinformationssystem Anton verwendet, welches ebenfalls komplett im Browser läuft. Sie kennen Anton noch nicht? [Ein Blick lohnt sich!](https://anton.ch)
 
 Balduin ist das Produkt einer Zusammenarbeit mit Kränzle & Ritter und der generösen Zeit als Scholar in Residence der Stiftung Eisenbibliothek der Firma Georg Fischer in Schaffhausen. Beiden sei an dieser Stelle herzlich für die Unterstützung gedankt! 
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/infografik_dark.png">
-    <img src=".github/infografik.png" alt="Balduin und Anton: Balduin analysiert die Datenträger, bewertet teilautomatisiert, erschließt stapelweise und schnürt die Exportpakete; Anton importiert die erschlossenen Dateien samt Metadaten." width="100%">
-  </picture>
-</p>
-
 <p align="left">
   <a href="https://www.eisenbibliothek.ch">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset=".github/logos/eisenbibliothek_dunkel.svg">
-      <img src=".github/logos/eisenbibliothek.svg" alt="Stiftung Eisenbibliothek" width="220">
+      <img src=".github/logos/eisenbibliothek.svg" alt="Stiftung Eisenbibliothek" width="300">
     </picture>
   </a>
 </p>
@@ -61,6 +53,12 @@ Balduin ist das Produkt einer Zusammenarbeit mit Kränzle & Ritter und der gener
 - **Daten bleiben im Haus.** Kein Konto, keine Cloud: Bildanalyse und Sprachmodell laufen lokal. Die
   Personenerkennung ist abschaltbar und erkennt nur, *dass* Personen im Bild sind, nicht *wer*.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/infografik_dark.png">
+    <img src=".github/infografik.png" alt="Balduin und Anton: Balduin analysiert die Datenträger, bewertet teilautomatisiert, erschließt stapelweise und schnürt die Exportpakete; Anton importiert die erschlossenen Dateien samt Metadaten." width="100%">
+  </picture>
+</p>
 
 ## 🧭 Wie und wo anfangen?
 
@@ -268,9 +266,9 @@ Tests, am besten zuerst der Test; vor dem Pull Request `.venv/bin/python -m pyte
   <img src=".github/logos/balduin_kontur.png" alt="Balduin, der Elefant" width="180">
 </p>
 
-Balduin – der kühne Freund – hilft, der Datemenge Herr oder Frau zu werden. Der rüssel wühlt auf jedem Datenträger und hebt Dateien verzeichnisweise von den Datenträgern ins Archiv. Das beste: Elefanten vergessen nichts. Auch nicht, wo eine Datei lag und ob diese oder deren Derivat oder auch deren Dublette schon bewertet wurden. Ein Trampel ist er aber ganz und nicht: der will ja nur lesen. Und skartieren/kassieren findet er sowiso nicht so schlimm. Er hat ja ein gutes Gedächtnis und das wichtigste liegt ja schon drüben im Anton. 
+Balduin – der kühne Freund – hilft, der Datemenge Herr oder Frau zu werden. Der Rüssel wühlt auf jedem Datenträger und hebt Dateien verzeichnisweise von den Datenträgern ins Archiv. Das beste: Elefanten vergessen nichts. Auch nicht, wo eine Datei lag und ob diese oder deren Derivat oder auch deren Dublette schon bewertet wurden. Ein Trampel ist er aber ganz und nicht: der will ja nur lesen. Und skartieren/kassieren findet er sowiso nicht so schlimm. Er hat ja ein gutes Gedächtnis und das wichtigste liegt ja schon drüben im Anton. 
 
-Das schöne Bild stammt übrigens [von hier](https://pixabay.com/images/id-5553128/): „Elephant“ von GDJ auf Pixabay.
+Das schöne Bild stammt übrigens [von hier](https://pixabay.com/images/id-5553128/).
 
 <a id="weitere-informationen"></a>
 
@@ -282,11 +280,7 @@ Das schöne Bild stammt übrigens [von hier](https://pixabay.com/images/id-55531
 - [Dokumentation zum Import](https://documentation.anton.ch/user/import/)
 - [Anton-Importformat](https://github.com/kraenzle-ritter/anton-import-format) – Schema der `metadata.json`
 
-**Blog**
-
-- *Beiträge folgen*
-
-### ⚖️ Lizenz
+## ⚖️ Lizenz
 
 Balduin – © 2026 Marc Eric Mitzscherling
 
