@@ -59,7 +59,7 @@ SPDX-License-Identifier = "LicenseRef-Eisenbibliothek-Logo"
 
 # Infografik im README: eigene Gestaltung mit dem Elefanten nach GDJ (Pixabay, Bild 5553128)
 [[annotations]]
-path = ".github/infografik.png"
+path = ".github/infografik*.png"
 precedence = "override"
 SPDX-FileCopyrightText = ["2026 Marc Eric Mitzscherling", "GDJ (Pixabay, Bild 5553128)"]
 SPDX-License-Identifier = "CC-BY-SA-4.0 AND LicenseRef-Pixabay"

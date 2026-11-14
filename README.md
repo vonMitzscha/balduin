@@ -28,7 +28,10 @@ Derzeit setzt Balduin voraus, dass Ihr Archiv das Archivinformationssystem Anton
 Balduin ist das Produkt einer Zusammenarbeit mit Kränzle & Ritter und der generösen Zeit als Scholar in Residence der Stiftung Eisenbibliothek der Firma Georg Fischer in Schaffhausen. Beiden sei an dieser Stelle herzlich für die Unterstützung gedankt! 
 
 <p align="center">
-  <img src=".github/infografik.png" alt="Balduin und Anton: Balduin analysiert die Datenträger, bewertet teilautomatisiert, erschließt stapelweise und schnürt die Exportpakete; Anton importiert die erschlossenen Dateien samt Metadaten." width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/infografik_dark.png">
+    <img src=".github/infografik.png" alt="Balduin und Anton: Balduin analysiert die Datenträger, bewertet teilautomatisiert, erschließt stapelweise und schnürt die Exportpakete; Anton importiert die erschlossenen Dateien samt Metadaten." width="100%">
+  </picture>
 </p>
 
 <p align="left">
