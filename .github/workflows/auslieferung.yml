@@ -1,6 +1,6 @@
 # Balduin als Programm bauen (Entscheidung 14.11.2026): je eine dmg für Mac mit Apple-Chip und Intel, ein Installer
 # für Windows und ein Archiv für Linux (Alpha). Bei einem Tag v* entsteht daraus ein GitHub-Release; von Hand
-# gestartet (workflow_dispatch) liegen die Dateien nur als Artefakte am Lauf.
+# gestartet (workflow_dispatch) liegen sie als Entwurfs-Release „Testbau“ bereit (nicht öffentlich).
 name: Auslieferung
 
 on:
@@ -79,3 +79,24 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" pakete/* --title "Balduin ${GITHUB_REF_NAME#v}" \
             --notes-file auslieferung/RELEASE.md --prerelease
+
+  # Von Hand gestartet: Pakete als Entwurfs-Release „Testbau“ ablegen (nur für Berechtigte sichtbar, nicht öffentlich).
+  # Release-Dateien kommen über GitHubs CDN, rund zehnmal schneller als Artefakte am Lauf. Der vorige Testbau wird ersetzt.
+  testbau:
+    needs: bauen
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          path: pakete
+          merge-multiple: true
+      - name: Entwurf „Testbau“ ersetzen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release delete testbau --yes --cleanup-tag 2>/dev/null || true
+          gh release create testbau pakete/* --draft --target "$GITHUB_SHA" \
+            --title "Testbau $(date -u +%Y-%m-%d) (${GITHUB_SHA::7})" \
+            --notes "Nicht veröffentlichter Testbau aus einem von Hand gestarteten Lauf. Nur für Tests, nicht weitergeben."

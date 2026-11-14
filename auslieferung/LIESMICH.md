@@ -12,7 +12,7 @@ Paketverwaltung installieren lässt (wie OpenRefine: Doppelklick, Arbeit im Brow
 ## Bauen über GitHub Actions
 
 Der Workflow `.github/workflows/auslieferung.yml` baut auf je einem Mac- (Apple-Chip und Intel), Windows- und
-Linux-Rechner. Von Hand gestartet („Run workflow“) liegen die Dateien als Artefakte am Lauf; bei einem Tag `v*`
+Linux-Rechner. Von Hand gestartet („Run workflow“) liegen die Dateien als Entwurfs-Release „Testbau“ bereit (nur für Berechtigte sichtbar, schneller als die Artefakte am Lauf); bei einem Tag `v*`
 entsteht ein Release (als Vorabversion, solange die Pakete nicht signiert sind; Text in `RELEASE.md`):
 
 ```bash
