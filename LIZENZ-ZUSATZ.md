@@ -45,7 +45,6 @@ Welche Datei unter welcher Lizenz steht, verzeichnet `REUSE.toml` (Lizenztexte i
 | Zeichen (`tool/web/balduin.png`, `docs/logo/`) | Pixabay-Inhaltslizenz |
 | Lucide-Symbole (`tool/web/vendor/lucide/`) | ISC |
 | Schrift Inter (`tool/web/vendor/inter/`) | SIL Open Font License 1.1 |
-| Bootstrap (`vorgaben/web/bootstrap.*`) | MIT |
 | JSON-Schema des Anton-Importformats (`vorgaben/anton_import/`) | MIT, © Kraenzle & Ritter |
 | NARA Digital Preservation Framework (`vorgaben/nara/`) | gemeinfrei |
 

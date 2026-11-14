@@ -3,7 +3,6 @@
 pandas
 numpy
 pillow            # F Vorschaubilder (pHash wird mit numpy berechnet)
-plotly            # I Dashboard (interaktive Diagramme)
 openpyxl          # G5 Auszug aus Anton (Excel) lesen
 onnxruntime       # F5 Personen auf Fotos (YOLOX-s, modelle/; Mac mit CoreML); V3 Sujet (OpenCLIP)
 pdfminer.six      # E4 Texte: Lesezeichen der PDF (Text und Schriftgrößen liest Poppler pdftotext)

@@ -2159,7 +2159,7 @@ class Erfassung:
             if daten["modus"] != "fortsetzen":
                 raise ValueError("Eine Auswahl läuft nur im Modus fortsetzen.")
             auftrag["schritte"] = list(daten["schritte"])
-        return self.starten(auftrag | {"uebersicht": daten.get("uebersicht", False), "passwort": daten.get("passwort")})
+        return self.starten(auftrag | {"passwort": daten.get("passwort")})
 
 
 # ---------- Projekte: öffnen, anlegen, zuletzt geöffnet ----------

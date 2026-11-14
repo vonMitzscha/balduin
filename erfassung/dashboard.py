@@ -6,7 +6,147 @@ JSON ausgeben lässt; die Bewertung (wirksame Entscheidungen) und den Stand der 
 Aufruf durch das Tool: python -m erfassung.lauf dashboard --projekt …
 """
 from .basis import *  # noqa: F401,F403
-from .uebersicht import ARTEN, DATUMSSTUFE, FORMATGRUPPEN, duplikat_spalten, formatgruppe, ordnerbaum, treemap_daten
+
+ARTEN = {"exakt": "exakt gleich", "variante": "Formatvariante", "beinahe": "beinahe gleich"}
+DATUMSSTUFE = {"EXIF": "eingebettete Metadaten", "XMP/IPTC": "eingebettete Metadaten", "Dokument": "eingebettete Metadaten",
+               "Dateiname": "Datei- oder Ordnername", "Ordnername": "Datei- oder Ordnername", "Dateisystem": "Dateisystem"}
+
+# Formatgruppe: erste passende Zeile gilt (Suchmuster auf MIME-Typ und Formatname)
+FORMATGRUPPEN = [
+    ("Kamera-RAW", r"Raw|RAW|Digital Negative"),       # Groß-/Kleinschreibung zählt („Drawing“ ist kein RAW)
+    ("Bild", r"^image/|Photoshop"),
+    ("PDF", r"application/pdf|Portable Document"),
+    ("Office", r"msword|ms-excel|ms-powerpoint|officedocument|opendocument|rtf|Word|Excel|Powerpoint"),
+    ("Grafik und Layout", r"postscript|Quark|InDesign|Illustrator|Corel|FreeHand|PageMaker|AutoCAD|Visio"),
+    ("Web", r"text/html|text/css|javascript|Front Page|MHTML"),
+    ("Video und Audio", r"^video/|^audio/|MPEG|Quicktime|Windows Media|Interleaved|Waveform"),
+    ("Archivdatei", r"zip|stuffit|rar|tar|gzip"),
+    ("Text", r"^text/"),
+    ("Schrift", r"font|Font"),
+]
+
+
+def formatgruppe(df):
+    gruppe = pd.Series("Sonstiges", index=df.index)
+    frei = pd.Series(True, index=df.index)
+    for name, muster in FORMATGRUPPEN:
+        treffer = frei & (df.mime.fillna("").str.contains(muster) | df.format.fillna("").str.contains(muster))
+        gruppe[treffer] = name
+        frei &= ~treffer
+    gruppe[df.puid.isna() | (df.puid == "UNKNOWN")] = "nicht erkannt"
+    gruppe[df.relpfad.map(ist_systemdatei).astype(bool)] = "Systemdatei"
+    return gruppe
+
+
+def duplikat_spalten(alle, gruppen):
+    """Je Datei: zu welcher Gruppe gehört sie (exakt vor variante vor beinahe: dup_art, dup_gruppe, dup_leit),
+    und wo ist sie überzählig (ueberz_art)? gruppen: Spalten art, gruppe_id, platte_id, relpfad, leitdatei."""
+    rang = gruppen.assign(rang=gruppen.art.map({"exakt": 0, "variante": 1, "beinahe": 2})).sort_values("rang")
+    mitglied = (rang.drop_duplicates(["platte_id", "relpfad"])
+                .rename(columns={"art": "dup_art", "gruppe_id": "dup_gruppe", "leitdatei": "dup_leit"})
+                [["platte_id", "relpfad", "dup_art", "dup_gruppe", "dup_leit"]])
+    ueberzaehlig = (rang[rang.leitdatei == 0].drop_duplicates(["platte_id", "relpfad"])
+                    .rename(columns={"art": "ueberz_art"})[["platte_id", "relpfad", "ueberz_art"]])
+    return alle.merge(mitglied, on=["platte_id", "relpfad"], how="left").merge(ueberzaehlig, on=["platte_id", "relpfad"], how="left")
+
+
+def treemap_daten(alle):
+    """Treemap „Wo liegen die Duplikate?“: jede Datei ein Rechteck, Daten kompakt als Listen.
+    alle braucht ordner, name, system und die Spalten aus duplikat_spalten(). Je Datei:
+    [Ordnernummer, Name, Bytes, Art (0 einmalig, 1 exakt, 2 variante, 3 beinahe, 4 Systemdatei), überzählig, Gruppennummer]."""
+    tm = alle[alle.groesse > 0]
+    ordner_voll = tm.platte_id + tm.ordner.map(lambda o: "/" + o if o else "")
+    ordnerliste = sorted(ordner_voll.unique())
+    ordnernummer = {o: i for i, o in enumerate(ordnerliste)}
+    gruppenliste = sorted(tm.dup_gruppe.dropna().unique())
+    gruppennummer = {gid: i for i, gid in enumerate(gruppenliste)}
+    art_code = tm.dup_art.map({"exakt": 1, "variante": 2, "beinahe": 3}).fillna(tm.system.map({True: 4, False: 0})).astype(int)
+    return {"ordner": ordnerliste, "gruppen": [str(g) for g in gruppenliste],
+            "dateien": [list(z) for z in zip(ordner_voll.map(ordnernummer).astype(int).tolist(), tm.name.tolist(),
+                                             tm.groesse.astype(int).tolist(), art_code.tolist(),
+                                             (tm.dup_art.notna() & (tm.dup_leit == 0)).astype(int).tolist(),
+                                             tm.dup_gruppe.map(gruppennummer).fillna(-1).astype(int).tolist())]}
+
+
+def gemeinsame_ebenen(a, b):
+    """Wie viele Ordnerebenen zwei Pfade (als Tupel) von oben gemeinsam haben: ("A", "B") und ("A", "C") → 1."""
+    n = 0
+    for x, y in zip(a, b):
+        if x != y:
+            break
+        n += 1
+    return n
+
+
+def anderswo(mitglieder):
+    """Je Datei (Platte, Pfad): Ebene, ab der ein anderes Exemplar derselben Platte außerhalb liegt, und die
+    anderen Platten mit Exemplaren. Liegt das andere Exemplar in „A/C“ und die Datei in „A/B“, zählt sie für
+    „A/B“ als anderswo vorhanden, für „A“ und die ganze Platte nicht (dort liegt beides drin): Ebene 1."""
+    je_gruppe = {}
+    for gid, p, r, teile in zip(mitglieder.gruppe_id, mitglieder.platte_id, mitglieder.relpfad, mitglieder.teile):
+        je_gruppe.setdefault(gid, []).append((p, r, teile))
+    ebene, platten = {}, {}
+    for liste in je_gruppe.values():
+        alle_platten = {p for p, _, _ in liste}
+        ordner = {}
+        for p, _, teile in liste:
+            ordner.setdefault(p, set()).add(teile)
+        ordner = {p: sorted(o) for p, o in ordner.items()}
+        for p, r, teile in liste:
+            if len(alle_platten) > 1:
+                platten.setdefault((p, r), set()).update(alle_platten - {p})
+            o = ordner[p]
+            if len(o) > 1:
+                # Sortiert teilt ein Ordner am wenigsten mit dem ersten oder letzten der übrigen Ordner
+                uebrige = [x for x in (o[0], o[1], o[-2], o[-1]) if x != teile]
+                k = min(gemeinsame_ebenen(teile, x) for x in uebrige)
+                ebene[(p, r)] = min(k, ebene.get((p, r), k))
+    return ebene, platten
+
+
+BAUMSPALTEN = ["dateien", "direkt", "bytes", "ex_gleich", "ex_gleich_b", "ex_andere", "ex_andere_b",
+               "al_gleich", "al_gleich_b", "al_andere", "al_andere_b"]
+
+
+def ordnerbaum(bestand, gruppen):
+    """Ordnerbaum je Datenträger: je Ordner (mit Unterordnern) Dateien, Bytes und wie viele davon auch in einem anderen
+    Ordner derselben Platte (gleich) oder auf anderen Platten (andere) liegen; ex = nur exakt gleich, al = alle Arten,
+    _b = Bytes. bestand ohne Systemdateien, mit Spalte ordner. Ergebnis: {Platte: (Tabelle, Einträge fürs Dashboard)};
+    Einträge = [Name, Eltern, *BAUMSPALTEN, ex_platten, al_platten], Eltern stehen vor ihren Kindern."""
+    dateien = bestand.loc[bestand.groesse > 0, ["platte_id", "relpfad", "ordner", "groesse"]].copy()   # wie G: leere Dateien zählen nicht
+    dateien["teile"] = dateien.ordner.map(lambda o: tuple(o.split("/")) if o else ())
+    m = gruppen[["art", "gruppe_id", "platte_id", "relpfad"]].merge(dateien, on=["platte_id", "relpfad"])
+    schluessel = list(zip(dateien.platte_id, dateien.relpfad))
+    for kurz, arten in (("ex", ["exakt"]), ("al", list(ARTEN))):       # nur exakt gleich / alle Duplikatarten
+        ebene, andere_platten = anderswo(m[m.art.isin(arten)])
+        dateien[f"{kurz}_ebene"] = [ebene.get(s, 999) for s in schluessel]
+        dateien[f"{kurz}_platten"] = [andere_platten.get(s, set()) for s in schluessel]
+
+    # Jede Datei zählt für ihren Ordner und alle Ordner darüber (Ebene 0 = ganze Platte)
+    z = dateien.assign(e=dateien.teile.map(lambda t: list(range(len(t) + 1)))).explode("e")
+    z["e"] = z.e.astype(int)
+    z["ort"] = [t[:e] for t, e in zip(z.teile, z.e)]
+    z["direkt"] = z.e == z.teile.map(len)
+    spalten = {"dateien": ("relpfad", "size"), "direkt": ("direkt", "sum"), "bytes": ("groesse", "sum")}
+    for kurz in ("ex", "al"):
+        z[f"{kurz}_gleich"] = z[f"{kurz}_ebene"] < z.e                  # ein Exemplar liegt außerhalb dieses Ordners
+        z[f"{kurz}_andere"] = z[f"{kurz}_platten"].map(bool)
+        for wo in ("gleich", "andere"):
+            z[f"{kurz}_{wo}_b"] = z.groesse * z[f"{kurz}_{wo}"]
+            spalten[f"{kurz}_{wo}"] = (f"{kurz}_{wo}", "sum")
+            spalten[f"{kurz}_{wo}_b"] = (f"{kurz}_{wo}_b", "sum")
+        spalten[f"{kurz}_platten"] = (f"{kurz}_platten", lambda s: ", ".join(sorted(set().union(*s))))
+    baum = z.groupby(["platte_id", "ort"]).agg(**spalten).reset_index()
+
+    ergebnis = {}
+    for platte_id, b in baum.groupby("platte_id"):
+        b = b.sort_values("ort").reset_index(drop=True)              # Eltern stehen vor ihren Kindern
+        nummer = {o: i for i, o in enumerate(b.ort)}
+        eintraege = [[o[-1] if o else platte_id, nummer[o[:-1]] if o else -1, *map(int, zahlen), ex_p, al_p]
+                     for o, zahlen, ex_p, al_p in zip(b.ort, b[BAUMSPALTEN].values, b.ex_platten, b.al_platten)]
+        ergebnis[platte_id] = (b, eintraege)
+    return ergebnis
+
 
 GRENZE = 300             # höchstens so viele Zeilen je Tabelle; der Bericht soll handlich bleiben
 

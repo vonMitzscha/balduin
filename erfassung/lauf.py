@@ -55,7 +55,7 @@ from contextlib import redirect_stdout
 from . import basis
 from .basis import *  # noqa: F401,F403
 from . import anton, archiv, duplikate, formate, metadaten, personen, platte, pruefsummen, quelle, schnellscan, texte, \
-    uebersicht, vergleich, virenscan, vorschau
+    vergleich, virenscan, vorschau
 
 
 class Uebersprungen(Exception):
@@ -169,19 +169,12 @@ def schritt_h(a):
     archiv.leitdateien()
 
 
-def schritt_i(a):
-    if not a.get("uebersicht"):
-        raise Uebersprungen("nicht gewählt")
-    uebersicht.dashboard_erstellen()
-
-
 # Kürzel (intern, auch in Log und Protokoll), Name (im Tool, gleich wie in tool/web/erfassung.js), Funktion
 SCHRITTE = [("B", "Registrierung", schritt_b), ("C", "Verzeichnis", schritt_c),
             ("D1", "Prüfsummen", schritt_d1), ("D2", "Formate", schritt_d2),
             ("D3", "Virenscan", schritt_d3), ("E", "Metadaten", schritt_e), ("E4", "Texte", schritt_e4),
             ("F", "Vorschaubilder", schritt_f), ("F5", "Personen", schritt_f5), ("G", "Duplikate", schritt_g),
-            ("G5", "Anton-Abgleich", schritt_g5), ("H", "Archivfähigkeit", schritt_h),
-            ("I", "Bericht (HTML)", schritt_i)]
+            ("G5", "Anton-Abgleich", schritt_g5), ("H", "Archivfähigkeit", schritt_h)]
 MIT_PLATTE = {"C", "D1", "D2", "D3", "E", "E4", "F"}     # lesen die Platte; Registrierung prüft dann, ob sie da ist
 # Pflicht-Folgeschritte einer Auswahl: G schreibt die Duplikatgruppen neu und löscht dabei die Leitdateien, die erst H
 # setzt. Gleiche Angabe in tool/server.py und tool/web/erfassung.js (folgt)

@@ -82,5 +82,5 @@ und Zeichen „Balduin“ gehören nicht zur Lizenz. Wer Balduin verändert weit
 den Quelltext unter derselben Lizenz zugänglich.
 
 Dokumentation und Regeltabellen stehen unter CC BY-SA 4.0. Fremdbestandteile behalten ihre Lizenz (Lucide ISC, Inter
-OFL 1.1, Bootstrap MIT, Anton-Importschema MIT, NARA gemeinfrei, Zeichen Pixabay-Inhaltslizenz). Je Datei verzeichnet
+OFL 1.1, Anton-Importschema MIT, NARA gemeinfrei, Zeichen Pixabay-Inhaltslizenz). Je Datei verzeichnet
 `REUSE.toml` die Lizenz nach der REUSE-Spezifikation, die Texte liegen in `LICENSES/`.

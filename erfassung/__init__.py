@@ -9,5 +9,5 @@
 Balduin startet sie als Lauf im Hintergrund (erfassung/lauf.py).
 """
 from . import (anton, archiv, duplikate, formate, metadaten, personen, platte, pruefsummen, schnellscan, texte,
-               uebersicht, vergleich, virenscan, vorschau)
+               vergleich, virenscan, vorschau)
 from .basis import P, db, oeffnen, platz_pruefen, protokolliere, speicher_melden, virenfunde
