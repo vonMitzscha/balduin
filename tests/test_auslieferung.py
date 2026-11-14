@@ -78,3 +78,13 @@ def test_starter_erkennen_ein_anderes_balduin():
     for starter in (AUS / "mac" / "Starter.swift", AUS / "windows" / "Starter.cs"):
         text = starter.read_text(encoding="utf-8")
         assert "läuft bereits" in text and "Balduin läuft schon in einem anderen Fenster." in text, starter
+
+
+def test_installer_bietet_lange_pfade_auch_ohne_administratorrechte_an():
+    """Installation „nur für mich“: die letzte Seite bietet lange Pfade an (fragt dann einmal nach
+    Administratorrechten), nur wenn sie noch fehlen (Feedback 14.11.2026). Für alle: still gesetzt wie bisher."""
+    iss = (AUS / "windows" / "balduin.iss").read_bytes().decode("utf-8-sig")
+    lauf = [z for z in iss.splitlines() if "LongPathsEnabled" in z and z.startswith("Filename:")]
+    assert lauf, "kein Eintrag unter [Run] für lange Pfade"
+    assert "Verb: runas" in lauf[0] and "not IsAdminInstallMode" in lauf[0] and "not LangePfadeAn" in lauf[0]
+    assert "function LangePfadeAn" in iss

@@ -62,7 +62,19 @@ Name: "{autodesktop}\Balduin"; Filename: "{app}\Balduin.exe"; Tasks: desktop
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\FileSystem"; ValueType: dword; ValueName: "LongPathsEnabled"; ValueData: "1"; Check: IsAdminInstallMode
 
 [Run]
+; Installation „nur für mich“: lange Pfade auf der letzten Seite anbieten (fragt einmal nach Administratorrechten),
+; nur wenn sie noch fehlen; „für alle“ setzt sie oben unter [Registry] ohne Rückfrage (Feedback 14.11.2026)
+Filename: "{sys}\reg.exe"; Parameters: "add ""HKLM\SYSTEM\CurrentControlSet\Control\FileSystem"" /v LongPathsEnabled /t REG_DWORD /d 1 /f"; Description: "Lange Pfade (über 260 Zeichen) einrichten; fragt einmal nach Administratorrechten"; Flags: postinstall shellexec runhidden waituntilterminated skipifsilent; Verb: runas; Check: (not IsAdminInstallMode) and (not LangePfadeAn)
 Filename: "{app}\Balduin.exe"; Description: "Balduin jetzt starten"; Flags: nowait postinstall skipifsilent
+
+[Code]
+// Sind lange Pfade auf diesem Rechner schon eingerichtet? (Lesen geht ohne Administratorrechte)
+function LangePfadeAn: Boolean;
+var
+  Wert: Cardinal;
+begin
+  Result := RegQueryDWordValue(HKLM, 'SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', Wert) and (Wert = 1);
+end;
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\python"
