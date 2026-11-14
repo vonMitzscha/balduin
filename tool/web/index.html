@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balduin</title>
+<link rel="stylesheet" href="/web/app.css?v=55">
+</head>
+<body class="ohne-projekt">
+<header class="kopf">
+  <!-- Zeichen und Name; Klick öffnet „Über Balduin“ (Urheber und Lizenz, LIZENZ-ZUSATZ.md § 7 b) -->
+  <button id="ueber-knopf" type="button" class="marke" title="Über Balduin" aria-haspopup="dialog">
+    <span class="logo" aria-hidden="true"></span>
+    <span class="markentext">
+      <span class="markenname">Balduin</span>
+      <span class="version" title="Version: 0.Zahl der Commits">v{{VERSION}}</span>
+    </span>
+  </button>
+  <button id="projekt-knopf" type="button" class="projekt" title="Projekt wechseln oder neues Projekt anlegen">
+    <div id="projekt-name" class="ueberzeile">Projekt</div>
+    <div id="projekt-zeile" class="projektzeile">…</div>
+  </button>
+  <nav class="schritte" aria-label="Arbeitsschritte">
+    <!-- Projektweite Einstellungen (Entscheidung 05.11.2026): Name, Kürzel, Anton-Instanz und Token -->
+    <span class="einstellungen-halter">
+      <button id="projekt-einstellungen-knopf" type="button" class="schritt quadrat-knopf" title="Einstellungen des Projekts"
+              aria-label="Einstellungen des Projekts" aria-expanded="false">
+        <svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#settings"/></svg>
+      </button>
+      <div id="projekt-einstellungen" class="einstellungen projekt-einstellungen" hidden>
+        <div class="ueberschrift" style="margin-top:0">Einstellungen des Projekts</div>
+        <div id="projekt-einstellungen-inhalt"></div>
+        <div id="projekt-einstellungen-fehler" class="fehler"></div>
+        <div class="einstellungen-knoepfe">
+          <button id="projekt-einstellungen-verwerfen" type="button" class="knopf-leise" disabled>Verwerfen</button>
+          <button id="projekt-einstellungen-anwenden" type="button" disabled>Anwenden</button>
+        </div>
+      </div>
+    </span>
+    <span class="schritt-gruppe einstellungen-halter">
+      <button type="button" class="schritt" data-ansicht="erfassung"><b>1</b>Registrierung/Analyse<i id="lauf-marke" class="lauf-marke" hidden></i></button>
+      <button id="analyse-einstellungen-knopf" type="button" class="schritt-zahnrad" title="Einstellungen der Analyse"
+              aria-label="Einstellungen der Analyse" aria-expanded="false">
+        <svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#settings"/></svg>
+      </button>
+      <div id="analyse-einstellungen" class="einstellungen projekt-einstellungen" hidden>
+        <div class="ueberschrift" style="margin-top:0">Einstellungen der Analyse</div>
+        <div id="analyse-einstellungen-inhalt"></div>
+        <div id="analyse-einstellungen-fehler" class="fehler"></div>
+        <div class="einstellungen-knoepfe">
+          <button id="analyse-einstellungen-verwerfen" type="button" class="knopf-leise" disabled>Verwerfen</button>
+          <button id="analyse-einstellungen-anwenden" type="button" disabled>Anwenden</button>
+        </div>
+      </div>
+    </span>
+    <span class="schritt-gruppe einstellungen-halter">
+      <button type="button" class="schritt" data-ansicht="bewertung"><b>2</b>Bewertung</button>
+      <button id="einstellungen-knopf" type="button" class="schritt-zahnrad" title="Einstellungen der Bewertung"
+              aria-label="Einstellungen der Bewertung">
+        <svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#settings"/></svg>
+      </button>
+      <div id="einstellungen" class="einstellungen" hidden>
+        <div class="ueberschrift" style="margin-top:0">Einstellungen der Bewertung</div>
+        <div id="einstellungen-liste"></div>
+        <div class="leise">Gelten für das ganze Projekt. Angekreuzte Gruppen werden automatisch kassiert. Eine eigene Entscheidung an einer Datei geht vor, eine Entscheidung am Ordner nicht. Ohne Häkchen gilt für diese Dateien wieder die Entscheidung des Ordners, sonst bleiben sie offen.</div>
+        <div class="einstellungen-knoepfe">
+          <button id="einstellungen-verwerfen" type="button" class="knopf-leise" disabled>Verwerfen</button>
+          <button id="einstellungen-anwenden" type="button" disabled>Anwenden</button>
+        </div>
+      </div>
+    </span>
+    <button type="button" class="schritt vorlauf-knopf" data-ansicht="vorlauf" title="Vorlauf: Vorverarbeitung für die Erschließung"
+            aria-label="Vorlauf"><svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#list-checks"/></svg><i id="vl-marke" class="lauf-marke" hidden></i></button>
+    <span class="schritt-gruppe einstellungen-halter">
+      <button type="button" class="schritt" data-ansicht="erschliessung"><b>3</b>Erschließung</button>
+      <button id="es-einstellungen-knopf" type="button" class="schritt-zahnrad" title="Einstellungen der Erschließung"
+              aria-label="Einstellungen der Erschließung"><svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#settings"/></svg></button>
+      <div id="es-einstellungen" class="einstellungen" hidden>
+        <div class="ueberschrift" style="margin-top:0">Einstellungen der Erschließung</div>
+        <div id="es-einstellungen-inhalt"><div class="leise">…</div></div>
+      </div>
+    </span>
+    <span class="schritt-gruppe einstellungen-halter">
+      <button type="button" class="schritt" data-ansicht="export"><b>4</b>Bestand und Export<i id="ex-marke" class="lauf-marke" hidden></i></button>
+      <button id="ex-einstellungen-knopf" type="button" class="schritt-zahnrad" title="Einstellungen von Bestand und Export"
+              aria-label="Einstellungen von Bestand und Export" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#settings"/></svg></button>
+      <div id="ex-einstellungen" class="einstellungen export-ansicht" hidden>
+        <div class="ueberschrift" style="margin-top:0">Einstellungen von Bestand und Export</div>
+        <div id="ex-einstellungen-inhalt"><div class="leise">…</div></div>
+      </div>
+    </span>
+  </nav>
+  <div id="module" class="module" aria-label="Stand der Module"></div>
+  <button id="dashboard-knopf" type="button" class="dashboard-knopf" aria-expanded="false" title="Gesamtstand des Projekts">
+    <svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#layout-dashboard"/></svg>
+    Dashboard
+  </button>
+</header>
+
+<main id="start" class="start" hidden aria-label="Projekt"></main>
+
+<main id="bewertung" class="spalten" hidden>
+  <section class="karte baumspalte" aria-label="Bestand">
+    <div class="kartenkopf">
+      <h2>Bestand</h2>
+      <div class="kopf-rechts">
+        <label class="schalter"><input type="checkbox" id="systemdateien"> Systemdateien</label>
+        <button id="neu-laden" type="button" class="knopf-leise" title="Datenbank neu einlesen">Aktualisieren</button>
+      </div>
+    </div>
+    <div class="suchfeld">
+      <input type="search" id="suche" autocomplete="off" spellcheck="false"
+             placeholder="Ordner oder Datei suchen, z. B. Verbier 2001, *.tif">
+      <div id="suche-info" class="leise" hidden></div>
+    </div>
+    <div class="spaltenkoepfe">
+      <span class="links"><input type="checkbox" id="alle-kreuz" title="Alles auswählen" aria-label="Alles auswählen"><span aria-hidden="true">Ordner und Dateien</span></span><span>Größe</span><span>Entscheidung</span><span title="Archivfähigkeit · Bewertung · Dubletten">Archiv · Bewertung · Dubl.</span>
+    </div>
+    <ul id="baum" class="baum" role="tree"></ul>
+    <ul id="treffer" class="baum" hidden></ul>
+    <footer class="legende">
+      <div><b>Archivfähigkeit</b><i class="feld a-gruen"></i>grün<i class="feld a-gelb"></i>gelb<i class="feld a-rot"></i>rot</div>
+      <div><b>Bewertung</b><i class="feld e-ueb"></i>übernommen<i class="feld e-kas"></i>kassiert<i class="feld e-zur"></i>zurückgestellt<i class="feld e-offen"></i>offen</div>
+      <div><b>Dubletten</b><i class="feld d-exakt"></i>exakt<i class="feld d-variante"></i>Variante<i class="feld d-beinahe"></i>beinahe<span class="marke-a">A</span>schon in Anton</div>
+      <div><b>Entscheidung</b><span class="u-marke e-ueb eigen">übern.</span> hier entschieden
+        <span class="u-marke e-ueb geerbt">übern.</span> geerbt · <b style="min-width:0">V</b> mit Vorbehalt</div>
+      <div id="db-zustand" class="leise"></div>
+    </footer>
+  </section>
+
+  <section id="inspektor" class="karte inspektor" aria-label="Inspektor">
+    <div class="leer-hinweis">Links einen Ordner oder eine Datei wählen.</div>
+  </section>
+
+  <section id="editor" class="karte editor" aria-label="Editor">
+    <div class="leer-hinweis">Hier erscheinen Entscheidung und Regeln für das gewählte Element.</div>
+  </section>
+</main>
+
+<main id="erfassung" class="spalten erfassung" hidden>
+  <section class="karte" aria-label="Datenträger">
+    <div class="kartenkopf">
+      <h2>Datenträger</h2>
+      <button id="dt-neu" type="button" class="knopf-leise">Aktualisieren</button>
+    </div>
+    <div class="kartentext">
+      <div class="leise">Angeschlossen. Einen neuen Datenträger anklicken, um ihn zu registrieren und zu analysieren; einen bekannten, um fortzusetzen.</div>
+      <div id="dt-hinweis"></div>
+      <ul id="dt-liste" class="erf-liste"></ul>
+      <div class="knopfzeile"><button id="ordner-einlesen" type="button" class="knopf-leise"
+        title="Einen Ordner ohne eigenen Datenträger als Quelle einlesen (Mac, Netzlaufwerk, Übergabe als Download)">Ordner einlesen …</button>
+        <button id="abbild-einlesen" type="button" class="knopf-leise"
+        title="Abbild eines Mac-Datenträgers (HFS+, APFS) einlesen, ohne es einzuhängen: .dmg unkomprimiert, .img, .dd, .iso">Abbild einlesen …</button></div>
+      <div class="ueberschrift">Registrierte Datenträger</div>
+      <ul id="platten-liste" class="erf-liste"></ul>
+      <div class="leise legende-schritte">Grün: erledigt. Maus auf einen Schritt: was noch offen ist.</div>
+      <details id="platten-raus-box" class="platten-raus" hidden>
+        <summary>Aus dem Projekt genommen (<span id="platten-raus-zahl">0</span>)</summary>
+        <ul id="platten-raus" class="erf-liste"></ul>
+      </details>
+      <div class="ueberschrift">Bestand aus Anton</div>
+      <div id="anton-stand" class="anton-stand"></div>
+    </div>
+  </section>
+  <section class="karte" aria-label="Angaben">
+    <div class="kartenkopf"><h2>Angaben</h2></div>
+    <div id="angaben" class="kartentext"><div class="leer-hinweis">Links einen Datenträger wählen.</div></div>
+  </section>
+  <section class="karte" aria-label="Fortschritt">
+    <div class="kartenkopf"><h2>Läufe</h2><span id="lauf-kopf" class="leise"></span></div>
+    <div id="lauf" class="kartentext"><div class="leer-hinweis">Noch keine Analyse gestartet.</div></div>
+  </section>
+</main>
+
+<!-- Vorlauf: Vorverarbeitung für die Erschließung (tool/web/erschliessung.js) -->
+<main id="vorlauf" class="vorlauf-ansicht" hidden>
+  <section class="karte">
+    <div class="kartenkopf"><h2>Erschließung · Vorlauf</h2><button id="vl-neu" type="button" class="knopf-leise">Aktualisieren</button></div>
+    <div id="vl-inhalt" class="kartentext"><div class="leer-hinweis">…</div></div>
+  </section>
+</main>
+
+<!-- Modul 3 Erschließung: Baum · Editor · Bestandsboxen (tool/web/erschliessung.js) -->
+<main id="erschliessung" class="spalten es-spalten" hidden>
+  <section class="karte baumspalte" aria-label="Übernommenes">
+    <div class="kartenkopf">
+      <h2>Übernommenes</h2>
+      <div class="kopf-rechts">
+        <label class="schalter"><input type="checkbox" id="es-kassiert-aus"> Kassiertes ausblenden</label>
+        <button id="es-neu" type="button" class="knopf-leise" title="Neu einlesen">Aktualisieren</button>
+      </div>
+    </div>
+    <div class="es-filter">
+      <div class="es-suche"><svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#search"/></svg>
+        <input id="es-q" type="search" placeholder="Name, Pfad, Titel" autocomplete="off" spellcheck="false"></div>
+      <div class="es-nur-zeile">
+        <div class="es-nur" role="group" aria-label="Was zeigen">
+          <button type="button" data-nur="ordner" aria-pressed="false" title="Nur die Ordner mit Treffern zeigen, ohne die Dateien">nur Ordner</button>
+        </div>
+        <div class="es-nur" role="group" aria-label="Treffer zeigen als" title="Treffer mit ihrer Ordnerstruktur oder als einfache Liste">
+          <button type="button" data-ansicht="baum" class="aktiv">Struktur</button><button type="button" data-ansicht="liste">Liste</button>
+        </div>
+      </div>
+      <div id="es-facetten" class="es-facetten"></div>
+    </div>
+    <!-- gleicher Aufbau wie der Baum der Bewertung (#baum), letzte Spalte: Stand der Erschließung -->
+    <div class="spaltenkoepfe">
+      <span class="links"><input type="checkbox" id="es-alle-kreuz" title="Alles auswählen" aria-label="Alles auswählen"><span aria-hidden="true">Ordner und Dateien</span></span><span>Größe</span><span>Entscheidung</span><span title="erschlossen · in den Anton-Bestand eingereiht">Erschließung</span>
+    </div>
+    <ul id="es-baum" class="baum es-baum" role="tree"></ul>
+    <ul id="es-treffer" class="baum es-baum" hidden></ul>
+    <footer class="es-fuss">
+      <span class="leise" id="es-auswahl-info"></span>
+      <button type="button" id="es-zuordnen-knopf" disabled><svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#package"/></svg> Zuordnen …</button>
+    </footer>
+  </section>
+  <section id="es-editor" class="karte es-editor" aria-label="Erschließen">
+    <div class="leer-hinweis">Links einen übernommenen Ordner oder Dateien wählen.</div>
+  </section>
+  <!-- Bestandsboxen: keine Karte, auf dem grauen Grund; oben laden, darunter die Boxen mit angedockten Einheiten -->
+  <section class="es-boxen-spalte" aria-label="Bestand in Anton">
+    <form id="es-box-form" class="es-box-laden">
+      <input id="es-box-kennung" placeholder="Anton-ID oder Signatur" autocomplete="off" spellcheck="false" aria-label="Anton-ID oder Signatur">
+      <button type="submit"><svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#download"/></svg> Verzeichnungseinheit aus Anton laden</button>
+    </form>
+    <div id="es-box-fehler" class="fehler"></div>
+    <div id="es-boxen" class="es-boxen"></div>
+  </section>
+</main>
+
+<!-- Modul 4 Bestand und Export: Übersicht · Aktionen · Lauf und Pakete (tool/web/export.js, Entscheidung 05.11.2026) -->
+<main id="export" class="spalten erfassung export-ansicht" hidden>
+  <section class="karte" aria-label="Übersicht">
+    <div class="kartenkopf"><h2>Übersicht</h2>
+      <div class="kopf-rechts">
+        <span id="ex-sicht" class="umschalter" role="tablist"><button type="button" data-ex-sicht="platten" class="an">Datenträger</button><button
+          type="button" data-ex-sicht="bestaende">Bestände</button></span>
+        <button id="ex-neu" type="button" class="knopf-leise">Aktualisieren</button></div></div>
+    <div id="ex-links" class="kartentext"><div class="leer-hinweis">…</div></div>
+  </section>
+  <section class="karte" aria-label="Aktionen">
+    <div class="kartenkopf"><h2>Aktionen</h2></div>
+    <div id="ex-mitte" class="kartentext"><div class="leer-hinweis">…</div></div>
+  </section>
+  <div class="ex-rechts">
+    <!-- Details der in der Mitte gewählten Aktion (beim Packen mit dem Lauf) oder des unten gewählten Pakets -->
+    <section class="karte ex-details" aria-label="Details">
+      <div class="kartenkopf"><h2 id="ex-detail-titel">Details</h2></div>
+      <div id="ex-detail" class="kartentext"><div class="leer-hinweis">…</div></div>
+    </section>
+    <section class="karte ex-paketkarte" aria-label="Pakete">
+      <div class="kartenkopf"><h2>Pakete</h2><span id="ex-pakete-kopf" class="leise"></span></div>
+      <div id="ex-pakete" class="kartentext"><div class="leer-hinweis">Noch nichts geplant.</div></div>
+    </section>
+  </div>
+</main>
+
+<!-- Über Balduin: Urheber und Lizenz. Diese Angaben müssen in jeder Fassung erhalten bleiben (LIZENZ-ZUSATZ.md, § 7 b) -->
+<dialog id="ueber-dialog" class="dialog ueber" aria-labelledby="ueber-titel">
+  <form method="dialog">
+    <div class="ueber-kopf">
+      <span class="logo" aria-hidden="true"></span>
+      <div><h3 id="ueber-titel">Balduin</h3><div class="leise">Version {{VERSION}} · dt. kühner Freund</div></div>
+    </div>
+    <p class="dialog-text">Werkzeug zum Registrieren, Bewerten, Erschließen und Übergeben digitaler Bestände an Anton.</p>
+    <p class="ueber-urheber">© 2026 Marc Eric Mitzscherling</p>
+    <p class="dialog-text">Freie Software unter der <a href="/lizenz" target="_blank" rel="noopener">GNU Affero General Public
+      License, Version 3 oder später (AGPL-3.0-or-later)</a>, mit <a href="/lizenz/zusatz" target="_blank"
+      rel="noopener">zusätzlichen Bestimmungen nach § 7</a>. Ohne jede Gewährleistung. Wer Balduin verändert weitergibt
+      oder über ein Netz anbietet, muss den Quelltext unter derselben Lizenz zugänglich machen und diese Nennung behalten.</p>
+    <p class="leise">Zeichen nach „Elephant“ von GDJ (Pixabay) · Symbole Lucide (ISC) · Schrift Inter (SIL OFL 1.1) ·
+      Bootstrap (MIT) · Schema des Anton-Importformats (MIT, Kraenzle &amp; Ritter)</p>
+    <div class="knopfzeile"><button type="submit" class="haupt">Schließen</button></div>
+  </form>
+</dialog>
+
+<!-- Rückfragen und Meldungen aller Module (tool/web/dialoge.js, statt confirm/alert des Browsers) -->
+<dialog id="frage-dialog" class="dialog frage-dialog" aria-labelledby="frage-titel" aria-describedby="frage-text">
+  <form method="dialog">
+    <h3 id="frage-titel"></h3>
+    <p id="frage-text" class="dialog-text"></p>
+    <input id="frage-eingabe" type="password" autocomplete="off" spellcheck="false" hidden>
+    <div class="knopfzeile">
+      <button type="button" id="frage-abbrechen">Abbrechen</button>
+      <button type="submit" id="frage-ok" class="haupt">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="ex-frage-dialog"class="dialog dialog-breit" aria-labelledby="ex-frage-titel">
+  <form method="dialog">
+    <h3 id="ex-frage-titel">Rückfrage</h3>
+    <div id="ex-frage-inhalt"></div>
+    <div class="knopfzeile">
+      <button type="button" id="ex-frage-abbrechen">Abbrechen</button>
+      <button type="submit" id="ex-frage-ok" class="haupt">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<section id="dashboard" class="dashboard" hidden aria-label="Dashboard">
+  <div class="dashboard-inhalt">
+    <div class="dashboard-kopf">
+      <div><h2>Dashboard</h2><div id="db-stand" class="leise"></div></div>
+      <div class="kopf-rechts">
+        <button id="db-neu" type="button" class="knopf-leise">Aktualisieren</button>
+        <button id="db-bericht" type="button" class="knopf-leise" title="Schnappschuss als HTML-Datei in berichte/, zum Verschicken">Als Bericht speichern</button>
+        <button id="db-zu" type="button" class="knopf-leise" aria-label="Dashboard schließen">Schließen <svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#x"/></svg></button>
+      </div>
+    </div>
+    <div id="db-bericht-info" class="leise"></div>
+    <div id="db-inhalt"></div>
+  </div>
+</section>
+
+<!-- Erschließung: Abgleich mit verwandten Ordnern, Zuordnen in eine Box (tool/web/erschliessung.js) -->
+<dialog id="es-verwandte-dialog" class="dialog dialog-breit" aria-labelledby="es-verwandte-titel">
+  <form method="dialog" id="es-verwandte-form">
+    <h3 id="es-verwandte-titel">Möglicherweise zum selben Thema</h3>
+    <div id="es-verwandte-inhalt"></div>
+    <div id="es-verwandte-fehler" class="fehler"></div>
+    <div class="knopfzeile">
+      <button type="button" id="es-verwandte-nein">Nur hier speichern</button>
+      <button type="submit" id="es-verwandte-ok" class="haupt">Abgleichen</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="es-vererben-dialog" class="dialog dialog-breit" aria-labelledby="es-vererben-titel">
+  <form method="dialog" id="es-vererben-form">
+    <h3 id="es-vererben-titel">Vererben</h3>
+    <div id="es-vererben-inhalt"></div>
+    <div id="es-vererben-fehler" class="fehler"></div>
+    <div class="knopfzeile">
+      <button type="button" id="es-vererben-abbrechen">Abbrechen</button>
+      <button type="submit" id="es-vererben-ok" class="haupt">Vererben</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="es-frage-dialog" class="dialog dialog-breit" aria-labelledby="es-frage-titel">
+  <form method="dialog">
+    <h3 id="es-frage-titel">Rückfrage</h3>
+    <div id="es-frage-inhalt"></div>
+    <div class="knopfzeile">
+      <button type="button" id="es-frage-abbrechen">Abbrechen</button>
+      <button type="submit" id="es-frage-ok" class="haupt">OK</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="es-bild-dialog" class="dialog es-bild-dialog" aria-label="Vorschaubild">
+  <div id="es-bild-inhalt"></div>
+  <div class="knopfzeile">
+    <button type="button" id="es-bild-zurueck" title="vorheriges Bild (←)"><svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#chevron-left"/></svg></button>
+    <button type="button" id="es-bild-vor" title="nächstes Bild (→)"><svg class="icon" aria-hidden="true"><use href="/web/vendor/lucide/sprite.svg#chevron-right"/></svg></button>
+    <button type="button" id="es-bild-zu" class="haupt">Schließen</button>
+  </div>
+</dialog>
+<dialog id="es-zuordnen-dialog" class="dialog dialog-breit" aria-labelledby="es-zuordnen-titel">
+  <form method="dialog" id="es-zuordnen-form">
+    <h3 id="es-zuordnen-titel">Zuordnen</h3>
+    <div id="es-zuordnen-inhalt"></div>
+    <div id="es-zuordnen-fehler" class="fehler"></div>
+    <div class="knopfzeile">
+      <button type="button" id="es-zuordnen-abbrechen">Abbrechen</button>
+      <button type="submit" id="es-zuordnen-ok" class="haupt">Zuordnen</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Registrierung/Analyse: vor dem Start fragen, ob zuerst der Bestand aus Anton geholt werden soll (tool/web/erfassung.js) -->
+<dialog id="an-dialog" class="dialog" aria-labelledby="an-titel">
+  <form method="dialog">
+    <h3 id="an-titel">Zuerst den Bestand aus Anton holen?</h3>
+    <div id="an-inhalt"></div>
+    <div class="knopfzeile">
+      <button type="button" data-an="">Abbrechen</button>
+      <button type="button" data-an="ohne">Ohne Anton analysieren</button>
+      <button type="button" data-an="holen" class="haupt">Erst Anton holen, dann analysieren</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="raus-dialog" class="dialog" aria-labelledby="raus-titel">
+  <form id="raus-form" method="dialog">
+    <h3 id="raus-titel"></h3>
+    <p id="raus-text" class="dialog-text"></p>
+    <label class="dialog-feld">Zum Bestätigen die Kennung <b id="raus-kennung"></b> eintippen
+      <input id="raus-eingabe" autocomplete="off" spellcheck="false"></label>
+    <div id="raus-fehler" class="fehler"></div>
+    <div class="knopfzeile">
+      <button type="button" id="raus-abbrechen">Abbrechen</button>
+      <button type="submit" id="raus-ok" class="gefahr" disabled>Aus dem Projekt nehmen</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Bewertung: Prüfung der Fassungen (Varianten, exakte Kopien) vor dem Speichern einer Entscheidung -->
+<dialog id="fassung-dialog" class="dialog dialog-breit" aria-labelledby="fassung-titel">
+  <form id="fassung-form" method="dialog">
+    <h3 id="fassung-titel"></h3>
+    <div id="fassung-inhalt"></div>
+    <div class="knopfzeile">
+      <button type="button" id="fassung-abbrechen">Abbrechen</button>
+      <button type="submit" id="fassung-ok">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<script>window.SYSTEMWOERTER = {{SYSTEMWOERTER}};</script>
+<script src="/web/sprache.js?v=3"></script>
+<script src="/web/dialoge.js?v=3"></script>
+<script src="/web/icons.js?v=3"></script>
+<script src="/web/app.js?v=27"></script>
+<script src="/web/erfassung.js?v=34"></script>
+<script src="/web/erschliessung.js?v=24"></script>
+<script src="/web/export.js?v=11"></script>
+<script src="/web/dashboard.js?v=10"></script>
+<script src="/web/projekt.js?v=15"></script>
+</body>
+</html>

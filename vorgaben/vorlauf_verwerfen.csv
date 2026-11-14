@@ -1,0 +1,148 @@
+art;wert;hinweis
+arbeitsordner;originale;Arbeitsordner ohne Inhalt: kein Titel, kein Begriff (allgemein, nicht bestandsbezogen)
+arbeitsordner;original;
+arbeitsordner;originals;
+arbeitsordner;orig;
+arbeitsordner;bilder;
+arbeitsordner;bild;
+arbeitsordner;fotos;
+arbeitsordner;foto;
+arbeitsordner;photos;
+arbeitsordner;photo;
+arbeitsordner;images;
+arbeitsordner;image;
+arbeitsordner;pictures;
+arbeitsordner;archiv;
+arbeitsordner;archive;
+arbeitsordner;final;
+arbeitsordner;finals;
+arbeitsordner;fertig;
+arbeitsordner;hires;
+arbeitsordner;highres;
+arbeitsordner;lowres;
+arbeitsordner;lores;
+arbeitsordner;high;
+arbeitsordner;low;
+arbeitsordner;res;
+arbeitsordner;div;
+arbeitsordner;diverse;
+arbeitsordner;diverses;
+arbeitsordner;verschiedenes;
+arbeitsordner;various;
+arbeitsordner;misc;
+arbeitsordner;sonstiges;
+arbeitsordner;neu;
+arbeitsordner;new;
+arbeitsordner;alt;
+arbeitsordner;old;
+arbeitsordner;temp;
+arbeitsordner;tmp;
+arbeitsordner;daten;
+arbeitsordner;data;
+arbeitsordner;files;
+arbeitsordner;dateien;
+arbeitsordner;dokumente;
+arbeitsordner;documents;
+arbeitsordner;docs;
+arbeitsordner;ordner;
+arbeitsordner;folder;
+arbeitsordner;untitled;
+arbeitsordner;unbenannt;
+arbeitsordner;web;
+arbeitsordner;print;
+arbeitsordner;druck;
+arbeitsordner;jpg;
+arbeitsordner;jpeg;
+arbeitsordner;tif;
+arbeitsordner;tiff;
+arbeitsordner;png;
+arbeitsordner;pdf;
+arbeitsordner;psd;
+arbeitsordner;raw;
+arbeitsordner;export;
+arbeitsordner;exports;
+arbeitsordner;auswahl;
+arbeitsordner;selektion;
+arbeitsordner;selection;
+arbeitsordner;backup;
+arbeitsordner;kopie;
+arbeitsordner;copy;
+arbeitsordner;scans;
+arbeitsordner;scan;
+arbeitsordner;bearbeitet;
+arbeitsordner;edited;
+arbeitsordner;versand;
+arbeitsordner;sent;
+arbeitsordner;layout;
+arbeitsordner;layouts;
+arbeitsordner;links;
+arbeitsordner;unsortiert;
+arbeitsordner;rohdaten;
+text;olympus digital camera;Kameratext statt Beschreibung
+text;sony dsc;
+text;digital camera;
+text;kodak digital still camera;
+text;minolta digital camera;
+text;samsung digital camera;
+text;exif_jpeg_picture;
+text;untitled;Platzhalter
+text;unbenannt;
+text;unbenannt-1;
+text;ohne titel;
+text;kein titel;
+text;no title;
+text;titel;
+text;title;
+text;title of presentation;
+text;titel der präsentation;
+text;folie 1;
+text;slide 1;
+text;druck;
+text;print;
+text;dokument1;
+text;document1;
+text;dies ist eine beschreibung;
+text;beschreibung;
+text;description;
+text;copyright;
+text;copyright,;
+text;picasa;
+vorsatz;microsoft word - ;Vorsatz, der beim Drucken als PDF entsteht: wird abgeschnitten
+vorsatz;microsoft powerpoint - ;
+vorsatz;microsoft excel - ;
+vorsatz;powerpoint-präsentation - ;
+arbeitsordner;vti;technische Ordner von Websites und Satzprogrammen
+arbeitsordner;cnf;
+arbeitsordner;pvt;
+arbeitsordner;img;
+arbeitsordner;imgs;
+arbeitsordner;css;
+arbeitsordner;js;
+arbeitsordner;scripts;
+arbeitsordner;assets;
+arbeitsordner;gui;
+arbeitsordner;inc;
+arbeitsordner;includes;
+arbeitsordner;thumbs;
+arbeitsordner;thumbnails;
+arbeitsordner;fonts;
+arbeitsordner;schriften;
+arbeitsordner;spacer;
+arbeitsordner;cache;
+arbeitsordner;bak;
+arbeitsordner;document;
+enthaelt;all rights reserved;Software- oder Profilangabe, kein Inhalt
+enthaelt;accusoft;
+enthaelt;created by;
+enthaelt;hewlett-packard;
+enthaelt;adobe systems;
+enthaelt;lorem ipsum;
+enthaelt;software foundation;
+enthaelt;microsoft corporation;
+muster;^<.*>$;Wert in spitzen Klammern (Kamera- oder Programmangabe)
+muster;^[a-z]{1,4}[0-9]{3,}$;Benutzerkürzel (gfp00088, e00875)
+muster;^station[_ ]?[0-9]+$;Rechnername
+muster;\.(indd|qxd|qxp|doc|docx|ppt|pptx|xls|xlsx|pdf|jpg|jpeg|tif|tiff|eps|ai|psd|cdr|pm[0-9]|p65|fh[0-9]+)$;Dateiname statt Titel
+muster;^(www\.|https?://);Adresse statt Titel
+muster;^[^a-zäöüéèàß]*$;keine Buchstaben
+muster;^(img|dsc|dscn|dscf|pict|mvi|cimg|p)[_-]?[0-9]+$;Kamerazähler

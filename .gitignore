@@ -1,0 +1,24 @@
+# Umgebung
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+
+# Arbeitsdaten (nicht im Git)
+data/
+berichte/
+logs/
+sichtung/
+# export/ ist seit 04.11.2026 Rechencode von Modul 4; Pakete liegen im Projekt, hier nie
+export/*.zip
+testplatten/
+
+# Modelle der Inhaltsanalyse (groß, Bezug: werkzeuge/modelle_laden.py)
+modelle/*.onnx
+modelle/clip_tokenizer.json
+
+# Mitgelieferte Werkzeuge des späteren Pakets (system.werkzeug sucht hier zuerst)
+bin/
+
+# fremdes Skill-Repository (nur lokal)
+unslop/

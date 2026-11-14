@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Balduin
+Comment=Datenträger registrieren, bewerten, erschließen und für Anton packen
+Exec=sh -c 'cd "$(dirname "$1")" && exec ./balduin.sh' sh %k
+Icon=utilities-terminal
+Terminal=true
+Categories=Office;

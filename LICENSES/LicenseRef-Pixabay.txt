@@ -1,0 +1,15 @@
+Pixabay-Inhaltslizenz (Content License)
+
+Gilt für das Zeichen von Balduin (tool/web/balduin.png, docs/logo/balduin_elefant_original.png), bearbeitet nach
+„Elephant“ von GDJ, Pixabay, Bild 5553128 (https://pixabay.com).
+
+Maßgeblich ist der Wortlaut auf https://pixabay.com/de/service/license-summary/ und
+https://pixabay.com/de/service/terms/. Kurzfassung (ohne Gewähr):
+
+- Erlaubt: kostenlos nutzen, auch gewerblich, ohne Namensnennung; verändern und bearbeiten.
+- Nicht erlaubt: das Bild unverändert oder kaum verändert als eigenständiges Werk verkaufen oder verbreiten
+  (etwa als Stockbild, Druck, Poster oder auf Waren); den Eindruck erwecken, abgebildete Personen, Marken oder
+  Organisationen unterstützten ein Produkt; das Bild als Marke, Logo oder Geschäftszeichen eintragen lassen.
+
+Das Zeichen ist von der AGPL-3.0-or-later des Codes ausgenommen. Wer Balduin weitergibt, darf es im Rahmen dieser
+Lizenz mitgeben; veränderte Fassungen von Balduin verwenden es nach LIZENZ-ZUSATZ.md (§ 7 e) nicht als eigenes Zeichen.

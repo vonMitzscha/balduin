@@ -1,0 +1,7 @@
+Gemeinfrei (Werk einer Bundesbehörde der USA)
+
+Gilt für vorgaben/nara/ (NARA Digital Preservation Framework, fileformats.ttl, geladen von archives.gov mit
+werkzeuge/nara_laden.py). Werke von Bediensteten der US-Bundesregierung in Ausübung ihres Dienstes sind nach
+17 U.S.C. § 105 in den USA nicht urheberrechtlich geschützt.
+
+Quelle: U.S. National Archives and Records Administration (NARA), https://www.archives.gov/preservation/digital-preservation/risk

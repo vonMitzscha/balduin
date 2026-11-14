@@ -1,0 +1,35 @@
+puid,format_muster,ampel,massnahme,begruendung
+UNKNOWN,,rot,"prüfen: Endung ansehen, sonst kassieren (Vorschlag)",Format nicht erkannt
+,AppleDouble|DS_Store|Thumbs DB|Front Page|Office Owner File|ZoomBrowser|Thumbnail Cache|Browser Cache|Autorun|Windows Shortcut|Icon file format|cdrLabel|Easy CD Creator,rot,kassieren (Vorschlag),System- oder Hilfsdatei
+,Portable Executable|MS-DOS Executable|Windows Library,rot,kassieren (Vorschlag),Programmdatei
+,PDF/A,grün,übernehmen,archivfähig (PDF/A)
+,^Tagged Image File Format|Exchangeable Image File Format \(Uncompressed\),grün,übernehmen,archivfähig (TIFF)
+,JPEG File Interchange Format|Exchangeable Image File Format \(Compressed\)|Raw JPEG Stream,grün,übernehmen,archivfähig (JPEG)
+,JPEG 2000|JP2,grün,übernehmen,archivfähig (JPEG 2000)
+,Portable Network Graphics,grün,übernehmen,archivfähig (PNG)
+,^Plain Text File|Comma Separated Values|Extensible Markup Language,grün,übernehmen,archivfähig (Text)
+,Waveform Audio|Broadcast WAVE|FLAC,grün,übernehmen,archivfähig (Audio unkomprimiert/verlustfrei)
+,MPEG 1/2 Audio Layer 3,grün,übernehmen,archivfähig (MP3)
+,MPEG-4|Matroska,gelb,Codec prüfen (H.264 oder FFV1 behalten),Videocontainer; archivfähig nur mit geeignetem Codec
+,Acrobat PDF|Portable Document Format,gelb,in PDF/A umwandeln,PDF ohne Archivprofil
+,Adobe Photoshop,gelb,in TIFF umwandeln (Ebenen gehen verloren; PSD zusätzlich behalten?),proprietär
+,Camera Raw|Canon RAW|Digital Negative|Nikon|Olympus|Sony|Fuji|Raw Image,gelb,in TIFF oder DNG umwandeln,proprietäres Kamera-Rohformat
+,Graphics Interchange Format,gelb,in PNG umwandeln,eingeschränkte Farbtiefe
+,Windows Bitmap|PCX|Windows Metafile|Enhanced Metafile|Corel Photo-Paint|PICT|Macintosh Picture,gelb,in TIFF oder PNG umwandeln,veraltetes Bildformat
+,Encapsulated PostScript|PostScript|Adobe Illustrator|CorelDraw|FreeHand|Drawing Interchange,gelb,in PDF/A umwandeln (Vektorgrafik),proprietäres oder veraltetes Grafikformat
+,QuarkXPress|InDesign|PageMaker,gelb,"in PDF/A umwandeln; verknüpfte Bilder und Schriften prüfen",Layoutdatei eines Satzprogramms
+,Microsoft Word|Rich Text Format|WordPerfect|OpenDocument Text|Office Open XML Document,gelb,in PDF/A umwandeln,Textverarbeitung
+,Microsoft Excel|OpenDocument Spreadsheet,gelb,in PDF/A umwandeln (Daten zusätzlich als CSV),Tabellenkalkulation
+,Microsoft Powerpoint|OpenDocument Presentation,gelb,in PDF/A umwandeln,Präsentation
+,Hypertext Markup Language|Cascading Style Sheet|JavaScript,gelb,Website als Ganzes sichern (PDF/A oder WARC),Teil einer Website
+,Windows Media Video|Audio.Video Interleaved|Quicktime|MPEG-1|MPEG-2|MPEG Video|Flash Video,gelb,in MP4 (H.264) oder MKV (FFV1) umwandeln,veraltetes Videoformat
+,ZIP Format|Stuffit|RAR Archive|Tape Archive|GZIP|7Zip,gelb,entpacken und Inhalt einzeln bewerten,Archivdatei (Container)
+,Outlook Email Message|Internet Message Format,gelb,in EML und PDF/A umwandeln,E-Mail
+,FileMaker|Access Database|dBASE,gelb,Daten als CSV ausgeben (oder SIARD),Datenbank
+,TrueType Font|OpenType|Type 1|Adobe Font,gelb,nur zusammen mit Layoutdateien behalten,Schriftdatei (Hilfsdatei)
+,Nero|Disk Image|ISO 9660,gelb,Abbild öffnen und Inhalt einzeln erfassen,Datenträgerabbild
+,OLE2 Compound Document|Data File,gelb,Inhalt prüfen,Containerformat ohne genaue Bestimmung
+,AutoCAD|CATIA|Visio,gelb,in PDF/A umwandeln (CAD zusätzlich als DXF oder STEP),Zeichnung aus CAD- oder Zeichenprogramm
+,MHTML,gelb,in PDF/A umwandeln,gespeicherte Webseite
+,Extensible Metadata Platform,gelb,zusammen mit der zugehörigen Bilddatei behalten,Metadaten-Begleitdatei (XMP)
+,ICC Profile,gelb,nur zusammen mit den Bildern behalten,Farbprofil (Hilfsdatei)
