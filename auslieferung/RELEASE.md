@@ -1,3 +1,5 @@
+> **Vorversion (Beta).** Balduin ist im Aufbau und noch nicht an allen Beständen erprobt. Vor dem Einsatz an einem echten Bestand mit einer Kopie oder einem kleinen Datenträger ausprobieren; Rückmeldungen und Fehler bitte als Issue melden.
+
 **Herunterladen**
 
 | System | Datei |
@@ -15,8 +17,8 @@ Zu jeder Datei liegt die SHA-256 als `.sha256` bei.
   ersten Start Balduin mit Rechtsklick › „Öffnen“ starten; meldet macOS eine Sperre, unter Systemeinstellungen ›
   Datenschutz & Sicherheit „Dennoch öffnen“ wählen. Balduin läuft danach mit einem Symbol im Dock.
 - **Windows:** Installer ausführen. Er ist noch nicht signiert; meldet Windows „Der Computer wurde durch Windows
-  geschützt“, über „Weitere Informationen“ › „Trotzdem ausführen“ fortfahren. Mit Administratorrechten richtet er
-  lange Pfade (über 260 Zeichen) ein. Balduin läuft danach mit einem Symbol im Infobereich.
+  geschützt“, über „Weitere Informationen“ › „Trotzdem ausführen“ fortfahren. Er richtet lange Pfade (über 260 Zeichen)
+  ein; bei der Installation „nur für mich“ fragt er dafür einmal nach Administratorrechten. Balduin läuft danach mit einem Symbol im Infobereich.
 - **Linux (Alpha):** Archiv entpacken, `./balduin.sh` starten; benötigte Pakete der Distribution nennt
   `LIESMICH-ALPHA.txt`.
 
