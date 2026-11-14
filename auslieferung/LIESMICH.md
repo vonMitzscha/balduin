@@ -44,7 +44,9 @@ Neue Projekte schlägt Balduin im Paket unter `Dokumente/Balduin-Projekte` vor (
 
 ## Symbol und Gestaltung
 
-- `symbol.png` (1024 × 1024): Grundlage für `.icns` (Mac) und `.ico` (Windows), erzeugt beim Bau.
+- `symbol.png` (1024 × 1024): Grundlage für `.icns` (Mac), `.ico` (Windows) und `balduin.png` (Linux), erzeugt
+  beim Bau; Elefantenkopf auf weißer Fläche im Mac-Raster (824 px Fläche, leichter Schatten). Das Favicon der
+  Oberfläche (`tool/web/favicon.ico`, `favicon.png`) zeigt dieselbe Fläche ohne Rand.
 - **Icon Composer** (macOS 26, Liquid Glass): Liegt `mac/Balduin.icon` vor, übersetzt der Bau sie mit `actool` in
   `Assets.car`; `Balduin.icns` bleibt Rückfall für ältere Systeme. Als Vordergrund-Ebene dient
   `mac/symbol_ebenen/elefant.png` (freigestellt), der Hintergrund wird in Icon Composer als Farbe gesetzt.

@@ -13,6 +13,8 @@ Programmordner (= Code-Ordner im Paket; system.CODE zeigt darauf):
     bin/         Werkzeuge; mit eigenen Bibliotheken in Unterordnern (bin/clamav/, bin/poppler/), LIZENZEN.md
     modelle/     Modelle der Personenerkennung (F5); CLIP (V3) kommt später auf Abruf
     VERSION      Version wie in der Kopfleiste
+    AKTUALISIERUNG  Release-Liste des Repos, aus dem das Paket stammt (nur beim Bau im Workflow); Balduin zeigt daraus
+                 auf der Startseite eine neue Version an
 
 Ergebnis: Mac Balduin-<v>-Mac-AppleChip.dmg bzw. -Mac-Intel.dmg, Windows Balduin-<v>-Windows-Setup.exe,
 Linux Balduin-<v>-Linux-x86_64-alpha.tar.gz. Jede Datei aus dem Netz wird mit ihrer SHA-256 geprüft.
@@ -224,6 +226,10 @@ def code_kopieren(ziel):
             (ziel / rel).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(CODE / rel, ziel / rel)
     (ziel / "VERSION").write_text(version() + "\n", encoding="utf-8")
+    # Neue Version auf der Startseite (Entscheidung 14.11.2026): die Adresse kommt aus dem Workflow, nicht aus dem Code
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if repo:
+        (ziel / "AKTUALISIERUNG").write_text(f"https://api.github.com/repos/{repo}/releases?per_page=20\n", encoding="utf-8")
 
 
 def python_einrichten(ziel, plattform, ablage):

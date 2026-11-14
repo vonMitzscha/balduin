@@ -74,6 +74,79 @@ def version():
     return f"0.{zahl}" if zahl.isdigit() else "0"
 
 
+# Hinweis auf eine neue Version (Entscheidung 14.11.2026): Release-Liste aus der Datei AKTUALISIERUNG, die nur der Bau
+# im Workflow ins Paket legt (auslieferung/bauen.py); ohne sie (Code aus Git, Bau von Hand) keine Abfrage.
+# BALDUIN_AKTUALISIERUNG_URL geht vor, leer schaltet ab (so in den Tests).
+def aktualisierung_url():
+    if "BALDUIN_AKTUALISIERUNG_URL" in os.environ:
+        return os.environ["BALDUIN_AKTUALISIERUNG_URL"].strip()
+    try:
+        adresse = (CODE / "AKTUALISIERUNG").read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+    return adresse if adresse.startswith("https://") else ""
+
+
+AKTUALISIERUNG_URL = aktualisierung_url()
+
+
+def _versionszahlen(text):
+    """„0.92“ → (0, 92); None, wenn es keine Version ist."""
+    return tuple(int(t) for t in text.split(".")) if re.fullmatch(r"\d+(\.\d+)+", text or "") else None
+
+
+def neuere_version(eigene, releases):
+    """Höchste Version unter den Releases (Tag v<Zahl>.<Zahl>, ohne Entwürfe), wenn sie höher ist als die eigene;
+    sonst None. Ohne eigene Version („0“, Code ohne Git) kein Hinweis."""
+    eigen = _versionszahlen(eigene)
+    if not eigen:
+        return None
+    beste = None
+    for r in releases if isinstance(releases, list) else []:
+        if not isinstance(r, dict) or r.get("draft"):
+            continue
+        zahlen = _versionszahlen(str(r.get("tag_name") or "").removeprefix("v"))
+        if zahlen and zahlen > eigen and (not beste or zahlen > beste[0]):
+            beste = (zahlen, r)
+    if not beste:
+        return None
+    adresse = str(beste[1].get("html_url") or "")
+    return {"version": ".".join(map(str, beste[0])), "adresse": adresse if adresse.startswith("https://") else "",
+            "datum": beste[1].get("published_at") or ""}
+
+
+def aktualisierung(adresse=None):
+    """Neuere Version oder None. Die Antwort steht einen Tag in aktualisierung.json neben zuletzt.json; ein Fehler
+    (offline, gesperrt) bleibt still und wird ebenfalls einen Tag gemerkt, damit der Start nicht wartet.
+    Hinaus geht nur die Abfrage selbst, keine Angaben aus Projekten."""
+    adresse = AKTUALISIERUNG_URL if adresse is None else adresse
+    if not adresse:
+        return None
+    merk = Path(ZULETZT).parent / "aktualisierung.json"
+    try:
+        d = json.loads(merk.read_text(encoding="utf-8"))
+        if d.get("adresse") == adresse and time.time() - float(d.get("zeit", 0)) < 86400:
+            return neuere_version(VERSION, d.get("releases"))
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    try:
+        anfrage = urllib.request.Request(adresse, headers={"Accept": "application/vnd.github+json",
+                                                           "User-Agent": f"Balduin/{VERSION}"})
+        with urllib.request.urlopen(anfrage, timeout=3) as antwort:
+            releases = json.loads(antwort.read(2_000_000))
+        # nur, was der Vergleich braucht
+        releases = [{k: r.get(k) for k in ("tag_name", "draft", "html_url", "published_at")}
+                    for r in releases if isinstance(r, dict)] if isinstance(releases, list) else []
+    except (OSError, ValueError):
+        releases = []
+    try:
+        merk.parent.mkdir(parents=True, exist_ok=True)
+        merk.write_text(json.dumps({"adresse": adresse, "zeit": time.time(), "releases": releases}), encoding="utf-8")
+    except OSError:
+        pass
+    return neuere_version(VERSION, releases)
+
+
 # Lizenztexte für „Über Balduin“ (AGPL-3.0-or-later, Zusatz nach § 7; LIZENZ-ZUSATZ.md)
 LIZENZTEXTE = {"/lizenz": "LICENSE", "/lizenz/zusatz": "LIZENZ-ZUSATZ.md"}
 
@@ -2538,6 +2611,8 @@ class Anfrage(BaseHTTPRequestHandler):
                 return self.senden(200, (CODE / LIZENZTEXTE[url.path]).read_bytes(), "text/plain; charset=utf-8")
             if url.path == "/api/projekte":
                 return self.json(projekte_json())
+            if url.path == "/api/aktualisierung":            # neue Version auf der Startseite (Entscheidung 14.11.2026)
+                return self.json({"neu": aktualisierung(), "installiert": VERSION})
             if url.path == "/api/arbeitsplatten":
                 return self.json(lauf_aufrufen("arbeitsplatten", "--volumes", str(VOLUMES)))
             if url.path == "/api/zielordner":

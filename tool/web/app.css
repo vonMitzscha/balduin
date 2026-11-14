@@ -84,6 +84,13 @@ button.marke:hover:not(:disabled) { background: var(--flaeche-2); border-color: 
 .ueber-kopf { display: flex; align-items: center; gap: 12px; }
 .ueber-kopf .logo { width: 56px; height: 48px; flex: none; background: currentColor;
   -webkit-mask: url(balduin.png) center / contain no-repeat; mask: url(balduin.png) center / contain no-repeat; }
+/* Dunkle Ansicht: statt der Maske der weiß hinterlegte Elefant (balduin_dunkel.png), Systemeinstellung und Umschalter */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo { -webkit-mask: none; mask: none;
+    background: url(balduin_dunkel.png) center / contain no-repeat; }
+}
+:root[data-theme="dark"] .logo { -webkit-mask: none; mask: none;
+  background: url(balduin_dunkel.png) center / contain no-repeat; }
 .ueber-urheber { font-weight: 600; margin: 4px 0; }
 .ueber a { color: inherit; }
 .ueberzeile { font-size: 12px; color: var(--text-3); }
@@ -696,6 +703,15 @@ body.bericht-seite { display: block; height: auto; }
 .start-karte h1 { font-size: 22px; margin: 0 0 6px; }
 .start-karte .ueberschrift { margin-top: 16px; }
 .erklaerung { color: var(--text-2); margin: 0 0 16px; }
+/* Neue Version (Entscheidung 14.11.2026): oben in der Startkarte */
+.aktualisierung { display: flex; gap: 12px; align-items: flex-start; background: var(--flaeche-2); border-radius: 8px;
+                  padding: 12px; margin: 0 0 20px; }
+.aktualisierung > .icon { flex: none; margin-top: 2px; color: var(--fokus); }
+.aktualisierung > div { flex: 1; }
+.aktualisierung .knopfzeile { flex: none; align-items: center; }
+.aktualisierung-laden { display: inline-flex; gap: 6px; align-items: center; background: var(--dunkel); color: var(--auf-dunkel);
+                        border-radius: 8px; padding: 6px 12px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+@media (max-width: 860px) { .aktualisierung { flex-wrap: wrap; } }
 .start-knoepfe { margin-top: 24px; align-items: center; }
 .start-knoepfe .platzhalter { flex: 1; }
 .start-knoepfe button { display: inline-flex; align-items: center; gap: 6px; }

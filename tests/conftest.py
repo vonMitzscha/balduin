@@ -56,6 +56,7 @@ os.environ.update({
     "PLOTLY_RENDERER": "json",                        # keine Diagramme im Browser
     "BROWSER": "true",                                # webbrowser.open öffnet nichts
     "BALDUIN_REGION": "CH",                           # Systemregion fest (Anzeige „kassieren“), unabhängig vom Rechner
+    "BALDUIN_AKTUALISIERUNG_URL": "",                 # keine Abfrage neuer Versionen im Internet
 })
 
 sys.path.insert(0, str(SCHUTZ))

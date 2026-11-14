@@ -54,6 +54,7 @@ function startZeigen() {
         <div class="knopfzeile"><input name="name" autocomplete="off" spellcheck="false" aria-label="Name zum Bestätigen">
           <button type="button" data-loeschen-ab>Abbrechen</button><button type="submit" class="gefahr">In den Papierkorb</button></div></form>` : ""}</li>`).join("");
   $("#start").innerHTML = `<div class="start-karte">
+    <div id="start-aktualisierung" class="aktualisierung" hidden></div>
     <h1>${offen ? "Projekt wechseln" : "Willkommen"}</h1>
     <p class="erklaerung">Ein Projekt ist ein Ordner mit eigener Datenbank, eigenen Regeltabellen und eigenen Berichten,
       zum Beispiel für einen Bestand oder eine Abgabe. Die Datenträger selbst werden nur gelesen.</p>
@@ -65,6 +66,33 @@ function startZeigen() {
       <button type="button" id="start-anderes">${icon("folder-search")} Anderes Projekt öffnen …</button>
       <button type="button" id="start-neu" class="haupt">${icon("folder-plus")} Neues Projekt</button>
     </div></div>`;
+  aktualisierungZeigen();
+}
+
+// Neue Version (Entscheidung 14.11.2026): der Server fragt höchstens einmal am Tag nach; „Ausblenden“ gilt je Version
+let aktualisierungNeu;                                     // undefined = noch nicht gefragt, null = keine neuere
+let aktualisierungInstalliert = "";
+async function aktualisierungZeigen() {
+  if (aktualisierungNeu === undefined) {
+    try {
+      const r = await holen("/api/aktualisierung");
+      aktualisierungNeu = r.neu;
+      aktualisierungInstalliert = r.installiert;
+    } catch { aktualisierungNeu = null; }
+  }
+  const box = $("#start-aktualisierung");
+  const neu = aktualisierungNeu;
+  let aus = "";
+  try { aus = localStorage.getItem("aktualisierung-aus") || ""; } catch { /* privates Fenster */ }
+  if (!box || !neu || aus === neu.version) { if (box) box.hidden = true; return; }
+  const am = neu.datum ? ` vom ${new Date(neu.datum).toLocaleDateString("de-CH")}` : "";
+  box.innerHTML = `${icon("circle-arrow-up")}<div><b>Balduin ${esc(neu.version)} ist verfügbar</b>
+      <div class="leise">Installiert ist ${esc(aktualisierungInstalliert)}. Die neue Version${esc(am)} wird wie bisher heruntergeladen
+        und installiert; Projekte bleiben erhalten.</div></div>
+    <span class="knopfzeile">
+      ${neu.adresse ? `<a class="aktualisierung-laden" href="${esc(neu.adresse)}" target="_blank" rel="noopener">${icon("download")} Herunterladen …</a>` : ""}
+      <button type="button" class="knopf-mini" id="aktualisierung-aus" title="Für diese Version nicht mehr zeigen">${icon("x")}</button></span>`;
+  box.hidden = false;
 }
 
 async function projektOeffnen(pfad) {
@@ -83,6 +111,11 @@ async function projektOeffnen(pfad) {
 }
 
 $("#start").addEventListener("click", async (e) => {
+  if (e.target.closest("#aktualisierung-aus")) {
+    try { localStorage.setItem("aktualisierung-aus", aktualisierungNeu?.version || ""); } catch { /* privates Fenster */ }
+    $("#start-aktualisierung").hidden = true;
+    return;
+  }
   const weg = e.target.closest("[data-vergessen]");
   if (weg) {
     try { await senden("/api/projekt_vergessen", { pfad: weg.dataset.vergessen }); prj.daten = await holen("/api/projekte"); startZeigen(); }

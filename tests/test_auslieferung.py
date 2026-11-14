@@ -40,6 +40,19 @@ def test_code_kopieren(tmp_path):
     assert not list(tmp_path.rglob("__pycache__"))
 
 
+@pytest.mark.skipif(not git_repo(CODE), reason="braucht den Code als Git-Repo")
+def test_adresse_der_releases_nur_im_paket(tmp_path, monkeypatch):
+    """Neue Version (Entscheidung 14.11.2026): das Paket kennt die Release-Liste seines Repos, der Code selbst nicht."""
+    monkeypatch.setenv("GITHUB_REPOSITORY", "konto/balduin")
+    bauen["code_kopieren"](tmp_path)
+    assert (tmp_path / "AKTUALISIERUNG").read_text(encoding="utf-8").strip() == \
+        "https://api.github.com/repos/konto/balduin/releases?per_page=20"
+    monkeypatch.delenv("GITHUB_REPOSITORY")
+    (tmp_path / "AKTUALISIERUNG").unlink()
+    bauen["code_kopieren"](tmp_path)
+    assert not (tmp_path / "AKTUALISIERUNG").exists()          # Bau von Hand: keine Abfrage
+
+
 def test_symbole_im_dmg_passen_zum_hintergrund():
     zeichnen = runpy.run_path(str(AUS / "mac" / "hintergrund_zeichnen.py"), run_name="test")
     text = (AUS / "mac" / "dmg_einstellungen.py").read_text(encoding="utf-8")
