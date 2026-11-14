@@ -1,0 +1,8 @@
+Logo der Stiftung Eisenbibliothek, Schaffhausen (https://www.eisenbibliothek.ch)
+
+Alle Rechte liegen bei der Stiftung Eisenbibliothek. Das Logo steht im README von Balduin als Dank für die
+Unterstützung der Entwicklung; die Fassung für die dunkle Ansicht unterscheidet sich nur in der Farbe des
+Schriftzugs (weiß statt schwarz).
+
+Das Logo ist nicht Teil von Balduin und steht nicht unter dessen Lizenzen (AGPL-3.0-or-later, CC BY-SA 4.0).
+Wer Balduin weitergibt oder verändert, erhält damit kein Recht, das Logo anderweitig zu nutzen.

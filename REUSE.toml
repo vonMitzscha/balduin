@@ -19,7 +19,8 @@ SPDX-License-Identifier = "CC-BY-SA-4.0"
 
 # Zeichen des Tools: Elefant nach „Elephant“ von GDJ (Pixabay, Bild 5553128), nicht unter der AGPL
 [[annotations]]
-path = ["tool/web/balduin.png", "docs/logo/**", "auslieferung/symbol.png", "auslieferung/mac/symbol_ebenen/**"]
+path = ["tool/web/balduin.png", "docs/logo/**", "auslieferung/symbol.png", "auslieferung/mac/symbol_ebenen/**",
+        ".github/logos/balduin_kontur.png"]
 precedence = "override"
 SPDX-FileCopyrightText = "GDJ (Pixabay, Bild 5553128); Bearbeitung 2026 Marc Eric Mitzscherling"
 SPDX-License-Identifier = "LicenseRef-Pixabay"
@@ -48,3 +49,17 @@ path = "vorgaben/nara/**"
 precedence = "override"
 SPDX-FileCopyrightText = "U.S. National Archives and Records Administration (NARA)"
 SPDX-License-Identifier = "LicenseRef-NARA-Gemeinfrei"
+
+# Logo der Stiftung Eisenbibliothek (README, Dank); helle Fassung für die dunkle Ansicht, nicht unter der AGPL
+[[annotations]]
+path = ".github/logos/eisenbibliothek*.svg"
+precedence = "override"
+SPDX-FileCopyrightText = "Stiftung Eisenbibliothek, Schaffhausen"
+SPDX-License-Identifier = "LicenseRef-Eisenbibliothek-Logo"
+
+# Infografik im README: eigene Gestaltung mit dem Elefanten nach GDJ (Pixabay, Bild 5553128)
+[[annotations]]
+path = ".github/infografik.png"
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Marc Eric Mitzscherling", "GDJ (Pixabay, Bild 5553128)"]
+SPDX-License-Identifier = "CC-BY-SA-4.0 AND LicenseRef-Pixabay"
