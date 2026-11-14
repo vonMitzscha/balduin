@@ -10,7 +10,7 @@ Balduin braucht Python 3.13 (nicht 3.15: zu neu für einige Pakete) und Git. Im 
 git clone <Adresse dieses Repos> balduin
 cd balduin
 python3.13 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pip install -r requirements-entwicklung.txt   # Laufzeit (requirements.txt) plus Tests und Notebook
 .venv/bin/python werkzeuge/modelle_laden.py   # Modelle der Bildanalyse nach modelle/ (nur nötig, wenn ein Projekt sie nutzt)
 .venv/bin/python -m pytest -m "not integration"   # kurze Kontrolle
 ```

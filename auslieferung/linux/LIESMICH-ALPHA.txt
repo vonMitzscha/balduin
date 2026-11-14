@@ -1,0 +1,24 @@
+Balduin für Linux – ALPHA-VERSION
+=================================
+
+Diese Fassung ist eine Alpha-Version: Balduin läuft unter Linux, ist dort aber erst mit nachgestellten
+Systemantworten geprüft, noch nicht an einem echten Arbeitsplatz. Bitte zuerst mit Testdaten ausprobieren und
+Fehler melden: https://github.com/vonMitzscha/balduin/issues
+
+Starten
+  ./balduin.sh               im Terminal (Fenster offen lassen, solange gearbeitet wird)
+  ./menue_eintrag.sh         einmalig: Eintrag „Balduin (Alpha)“ im Anwendungsmenü anlegen
+
+Dabei sind Python mit allen Paketen, Siegfried (Formate), ExifTool (Metadaten) und ffmpeg (Filmvorschau).
+Aus der Paketverwaltung der Distribution kommen (Debian/Ubuntu):
+
+  sudo apt install poppler-utils smartmontools clamav clamav-freshclam udisks2 zenity libsecret-tools
+
+  poppler-utils     PDF-Texte und -Vorschaubilder
+  smartmontools     Zustand der Datenträger (SMART)
+  clamav            Virenscan; die Signaturen pflegt der Dienst clamav-freshclam
+  udisks2           Datenträger schreibgeschützt einhängen
+  zenity            Ordner- und Dateiauswahl
+  libsecret-tools   API-Token für Anton sicher ablegen
+
+Neue Projekte schlägt Balduin unter ~/Documents/Balduin-Projekte (bzw. ~/Balduin-Projekte) vor.

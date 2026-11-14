@@ -96,6 +96,16 @@ def test_version_auch_wenn_git_dem_ordner_misstraut(monkeypatch):
     assert v.startswith("0.") and v[2:].isdigit(), v
 
 
+def test_version_aus_datei_vor_git(tmp_path, monkeypatch):
+    """Im öffentlichen Spiegel und im Paket zählt Git nicht die Commits des privaten Repos; dort steht die Version in
+    der Datei VERSION, die vor Git gilt (Entscheidung 14.11.2026)."""
+    (tmp_path / "VERSION").write_text("0.74\n", encoding="utf-8")
+    monkeypatch.setattr(server, "CODE", tmp_path)
+    assert server.version() == "0.74"
+    (tmp_path / "VERSION").write_text("kaputt\n", encoding="utf-8")       # Unsinn in der Datei: wie ohne Datei
+    assert server.version() != "kaputt"
+
+
 def test_git_unter_windows_auch_ausserhalb_des_suchpfads(monkeypatch):
     from erfassung import system
     monkeypatch.setattr(system, "windows", lambda: True)

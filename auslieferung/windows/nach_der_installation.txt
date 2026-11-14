@@ -1,0 +1,23 @@
+﻿Balduin ist installiert.
+
+Starten über das Startmenü (oder die Verknüpfung auf dem Desktop). Balduin öffnet sich im Browser; ein Elefant im
+Infobereich der Taskleiste (unten rechts) zeigt, dass Balduin läuft. Rechtsklick darauf: „Balduin öffnen“ oder
+„Balduin beenden“. Laufende Analysen arbeiten auch nach dem Beenden weiter.
+
+Neue Projekte schlägt Balduin unter Dokumente\Balduin-Projekte vor; jeder andere Ort lässt sich wählen.
+
+
+Optional für die Erschließung: ein lokales Sprachmodell
+-------------------------------------------------------
+
+In der Erschließung kann Balduin auf Abruf Vorschläge für Titel, Laufzeit und Beschreibung von einem Sprachmodell
+holen. Das Modell läuft auf diesem Rechner; keine Bilder oder Texte gehen ins Internet. Alles andere in Balduin
+funktioniert auch ohne.
+
+Es lohnt sich bei viel Erschließungsarbeit und einem Rechner mit mindestens 16 GB Arbeitsspeicher:
+
+  1. Ollama installieren: https://ollama.com/download
+  2. In der Eingabeaufforderung das Modell laden (rund 9 GB):
+       ollama pull qwen2.5:14b
+  3. In Balduin unter Erschließung in den Einstellungen (Zahnrad am Knopf „Erschließung“) die Verbindung prüfen.
+

@@ -22,9 +22,33 @@ def clamav_programm(name):
     raise RuntimeError("ClamAV fehlt. " + system.installationshinweis("clamav"))
 
 
+def eigene_signaturen(programm):
+    """Ordner für Signaturen und Einstellung, wenn ClamAV mit Balduin geliefert ist (bin/ im Paket): der Programmordner
+    ist dort nicht beschreibbar, also im Datenordner der App (Entscheidung 14.11.2026). Sonst None (Vorgaben von
+    ClamAV aus Homebrew, dem Installer oder der Paketverwaltung)."""
+    try:
+        Path(programm).resolve().relative_to((system.CODE / "bin").resolve())
+    except ValueError:
+        return None
+    return system.app_daten() / "clamav"
+
+
+def datenbank_option(programm):
+    """Zusatz für clamscan: Signaturen aus dem eigenen Ordner lesen (nur bei mitgeliefertem ClamAV)."""
+    ordner = eigene_signaturen(programm)
+    return [f"--database={ordner / 'db'}"] if ordner else []
+
+
+def datenbank_zeile(programm):
+    """Zeile für clamd.conf: Signaturen aus dem eigenen Ordner lesen (nur bei mitgeliefertem ClamAV)."""
+    ordner = eigene_signaturen(programm)
+    return f"DatabaseDirectory {ordner / 'db'}\n" if ordner else ""
+
+
 def clamav_stand():
     """„ClamAV 1.5.4/28168/Thu Oct 29 07:24:16 2026“ = Programm/Signaturversion/Datum; ohne Signaturen nur „ClamAV 1.5.4“."""
-    return subprocess.run([clamav_programm("clamscan"), "--version"], capture_output=True, text=True).stdout.strip()
+    clamscan = clamav_programm("clamscan")
+    return subprocess.run([clamscan, *datenbank_option(clamscan), "--version"], capture_output=True, text=True).stdout.strip()
 
 
 def signaturen_auffrischen(hoechstens_tage=1):
@@ -42,12 +66,20 @@ def signaturen_auffrischen(hoechstens_tage=1):
                                "ihn einrichten (" + system.installationshinweis("freshclam") + ") und starten.")
         return stand
     freshclam = clamav_programm("freshclam")
-    konf, vorlage = system.clamav_konfiguration(freshclam)
-    if not konf.exists() and vorlage.exists():
-        # die Vorlage ist mit der Zeile „Example“ gesperrt; ohne sie gelten die Standardwerte
-        konf.write_text("".join(z for z in vorlage.read_text(encoding="utf-8").splitlines(True) if not z.startswith("Example")), encoding="utf-8")
+    befehl = [freshclam]
+    if (eigen := eigene_signaturen(freshclam)):
+        # mitgeliefertes ClamAV: eigene Einstellung mit Signaturen im Datenordner der App
+        (eigen / "db").mkdir(parents=True, exist_ok=True)
+        konf = eigen / "freshclam.conf"
+        konf.write_text(f"DatabaseDirectory {eigen / 'db'}\nDatabaseMirror database.clamav.net\n", encoding="utf-8")
+        befehl.append(f"--config-file={konf}")
+    else:
+        konf, vorlage = system.clamav_konfiguration(freshclam)
+        if not konf.exists() and vorlage.exists():
+            # die Vorlage ist mit der Zeile „Example“ gesperrt; ohne sie gelten die Standardwerte
+            konf.write_text("".join(z for z in vorlage.read_text(encoding="utf-8").splitlines(True) if not z.startswith("Example")), encoding="utf-8")
     print("Signaturen auffrischen (freshclam) …")
-    ergebnis = subprocess.run([freshclam], capture_output=True, text=True)
+    ergebnis = subprocess.run(befehl, capture_output=True, text=True)
     neu = clamav_stand()
     if ergebnis.returncode != 0:
         if len(neu.split("/")) < 3:
@@ -74,10 +106,11 @@ class Clamd:
         self.ordner = tempfile.mkdtemp(prefix="clamd_")
         self.dienst = system.dienst_adresse(self.ordner)
         konf = Path(self.ordner) / "clamd.conf"
-        konf.write_text(f"{self.dienst['konf']}Foreground yes\nMaxThreads {parallel}\n"
+        clamd = clamav_programm("clamd")
+        konf.write_text(f"{self.dienst['konf']}{datenbank_zeile(clamd)}Foreground yes\nMaxThreads {parallel}\n"
                         f"MaxFileSize {CLAMAV_GRENZE}\nMaxScanSize 4000M\n"
                         "AlertExceedsMax yes\nAlertEncrypted yes\nDisableCache yes\n", encoding="utf-8")
-        self.prozess = subprocess.Popen([clamav_programm("clamd"), "-c", str(konf)], stdout=log, stderr=log)
+        self.prozess = subprocess.Popen([clamd, "-c", str(konf)], stdout=log, stderr=log)
         frist = time.monotonic() + 180
         try:
             while True:        # das Laden der Signaturen dauert einige Sekunden

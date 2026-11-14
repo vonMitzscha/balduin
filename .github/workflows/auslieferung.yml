@@ -1,0 +1,78 @@
+# Balduin als Programm bauen (Entscheidung 14.11.2026): je eine dmg für Mac mit Apple-Chip und Intel, ein Installer
+# für Windows und ein Archiv für Linux (Alpha). Bei einem Tag v* entsteht daraus ein GitHub-Release; von Hand
+# gestartet (workflow_dispatch) liegen die Dateien nur als Artefakte am Lauf.
+name: Auslieferung
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bauen:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "Mac (Apple-Chip)", os: macos-15 }
+          - { name: "Mac (Intel)", os: macos-15-intel }
+          - { name: "Windows", os: windows-2025 }
+          - { name: "Linux (Alpha)", os: ubuntu-22.04 }
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Go für Siegfried (Mac)
+        if: runner.os == 'macOS'
+        uses: actions/setup-go@v6
+        with:
+          go-version: "stable"
+          cache: false
+
+      - name: Bauwerkzeuge
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pillow
+          if [ "$RUNNER_OS" = "macOS" ]; then python -m pip install dmgbuild; fi
+
+      - name: Inno Setup (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+
+      - name: Bauen
+        shell: bash
+        run: python auslieferung/bauen.py --ziel "$RUNNER_TEMP/bau"
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: balduin-${{ runner.os }}-${{ runner.arch }}
+          path: ${{ runner.temp }}/bau/ausgabe/*
+          if-no-files-found: error
+
+  veroeffentlichen:
+    needs: bauen
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v6
+        with:
+          path: pakete
+          merge-multiple: true
+      - name: Release anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" pakete/* --title "Balduin ${GITHUB_REF_NAME#v}" \
+            --notes-file auslieferung/RELEASE.md --prerelease

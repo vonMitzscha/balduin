@@ -853,6 +853,8 @@ ZUSATZ_ORDNER = zusatz_ordner()
 def werkzeug_pfad(name):
     """Pfad zu einem externen Programm oder None, wenn es fehlt."""
     eigene = [o for o in os.environ.get("BALDUIN_WERKZEUGE", "").split(os.pathsep) if o] + [str(CODE / "bin")]
+    if (CODE / "bin").is_dir():               # Paket: Werkzeuge mit eigenen Bibliotheken in Unterordnern (bin/clamav/)
+        eigene += sorted(str(o) for o in (CODE / "bin").iterdir() if o.is_dir())
     for ordner in eigene:
         if (pfad := shutil.which(name, path=ordner)):
             return pfad
@@ -862,6 +864,31 @@ def werkzeug_pfad(name):
         if (pfad := shutil.which(name, path=ordner)):
             return pfad
     return None
+
+
+def im_paket():
+    """Läuft Balduin aus dem Paket (Mac-App, Windows-Installer, Linux-Archiv) mit eigenem Python in python/?"""
+    return (CODE / "python").is_dir()
+
+
+def projekte_vorgabe():
+    """Vorgabe-Speicherort neuer Projekte: im Git Projekte/ neben dem Code (Entscheidung 30.10.2026); im Paket wäre
+    das im Programm selbst, dort also Dokumente/Balduin-Projekte (ohne Dokumente-Ordner im persönlichen Ordner)."""
+    if not im_paket():
+        return CODE.parent / "Projekte"
+    dokumente = Path.home() / "Documents"
+    return (dokumente if dokumente.is_dir() else Path.home()) / "Balduin-Projekte"
+
+
+def paket_umgebung():
+    """Umgebungsvariablen für die Werkzeuge im Paket (Entscheidung 14.11.2026): Siegfried findet seine Signaturdatei
+    in bin/siegfried/, ClamAV das Zertifikat der Signaturen in bin/clamav/certs/. Ohne Paket leer."""
+    umgebung = {}
+    if (CODE / "bin" / "siegfried").is_dir():
+        umgebung["SIEGFRIED_HOME"] = str(CODE / "bin" / "siegfried")
+    if (CODE / "bin" / "clamav" / "certs").is_dir():
+        umgebung["CVD_CERTS_DIR"] = str(CODE / "bin" / "clamav" / "certs")
+    return umgebung
 
 
 def werkzeug(name):

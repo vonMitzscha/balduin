@@ -1,14 +1,14 @@
-# Notebook 1
-ipykernel
+# Laufzeit: was Balduin und seine Läufe brauchen (geht ins Paket, Entscheidung 13.11.2026).
+# Entwicklung (Notebook, Tests, Git-Filter): requirements-entwicklung.txt
 pandas
 numpy
-matplotlib
-jinja2
+matplotlib        # Diagramme der Ansichten (erfassung/anzeige.py)
+ipython           # HTML-Ausgaben der Ansichten (IPython.display), auch außerhalb des Notebooks
+jinja2            # Tabellen als HTML (pandas Styler)
 pillow            # F Vorschaubilder (pHash wird mit numpy berechnet)
 plotly            # I Dashboard (interaktive Diagramme)
-nbformat          # Plotly-Diagramme im Notebook anzeigen
-openpyxl          # G5 Auszug aus Anton (Excel) lesen; später Anton-Excel in Notebook 3
-onnxruntime       # F5 Personen auf Fotos (YOLOX-s, modelle/; Mac mit CoreML); später Modul 3 Inhaltsanalyse
+openpyxl          # G5 Auszug aus Anton (Excel) lesen
+onnxruntime       # F5 Personen auf Fotos (YOLOX-s, modelle/; Mac mit CoreML); V3 Sujet (OpenCLIP)
 pdfminer.six      # E4 Texte: Lesezeichen der PDF (Text und Schriftgrößen liest Poppler pdftotext)
 python-docx       # E4 Texte: Word ab 2007 (.docx)
 python-pptx       # E4 Texte: PowerPoint ab 2007 (.pptx)
@@ -18,13 +18,3 @@ libfshfs-python==20260922   # HFS+/HFSX lesen (libyal, LGPL-3.0)
 libfsapfs-python==20260921  # APFS lesen, auch verschlüsselt nach Passwort (libyal, LGPL-3.0)
 pytsk3==20260715            # Partitionstabelle (GPT, MBR, Apple Partition Map) über The Sleuth Kit (Apache-2.0)
 jsonschema        # Modul 4: metadata.json gegen das Schema des Anton-Importformats prüfen (vorgaben/anton_import/)
-# Folgt mit Notebook 2/3:
-# rapidfuzz, requests,
-# open_clip (Export nach ONNX), rapidocr-onnxruntime
-#   (Modul 3: Inhaltsanalyse der behaltenen Dateien, plattformneutral statt Apple Vision)
-
-# Automatische Tests (Entscheidung 05.11.2026): .venv/bin/python -m pytest
-pytest
-
-# Git-Filter, entfernt Notebook-Ausgaben beim Commit (einmalig: nbstripout --install)
-nbstripout

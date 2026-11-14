@@ -296,6 +296,44 @@ def test_werkzeug_aus_dem_suchpfad_und_homebrew(tmp_path, monkeypatch):
     assert system.werkzeug("gibtsnicht") == "gibtsnicht"
 
 
+def test_werkzeug_auch_in_unterordnern_von_bin(tmp_path, monkeypatch):
+    """Im Paket liegen Werkzeuge mit eigenen Bibliotheken in Unterordnern von bin/ (bin/clamav/, bin/poppler/), damit
+    sich gleichnamige Bibliotheken nicht stören (Entscheidung 14.11.2026); bin/ selbst geht vor."""
+    monkeypatch.delenv("BALDUIN_WERKZEUGE", raising=False)
+    monkeypatch.setattr(system, "CODE", tmp_path / "code")
+    monkeypatch.setenv("PATH", str(tmp_path / "leer"))
+    monkeypatch.setattr(system, "ZUSATZ_ORDNER", [])
+    from hilfen.plattform import gleicher_pfad
+    oben = ausfuehrbar(tmp_path / "code" / "bin", "sf")
+    ausfuehrbar(tmp_path / "code" / "bin" / "aaa", "sf")
+    clamd = ausfuehrbar(tmp_path / "code" / "bin" / "clamav", "clamd")
+    assert gleicher_pfad(system.werkzeug_pfad("sf"), oben)
+    assert gleicher_pfad(system.werkzeug_pfad("clamd"), clamd)
+    assert system.werkzeug_pfad("pdftotext") is None
+
+
+def test_projekte_vorgabe_im_git_und_im_paket(tmp_path, monkeypatch):
+    """Im Git liegen neue Projekte neben dem Code; im Paket wäre das im Programm (App-Bundle, C:\\Program Files), also
+    dort unter Dokumente/Balduin-Projekte bzw. im persönlichen Ordner (Entscheidung 14.11.2026)."""
+    monkeypatch.setattr(system, "CODE", tmp_path / "app" / "balduin")
+    monkeypatch.setattr(system.Path, "home", classmethod(lambda cls: tmp_path / "ich"))
+    assert system.projekte_vorgabe() == tmp_path / "app" / "Projekte"
+    (tmp_path / "app" / "balduin" / "python").mkdir(parents=True)
+    assert system.projekte_vorgabe() == tmp_path / "ich" / "Balduin-Projekte"
+    (tmp_path / "ich" / "Documents").mkdir(parents=True)
+    assert system.projekte_vorgabe() == tmp_path / "ich" / "Documents" / "Balduin-Projekte"
+
+
+def test_paket_umgebung(tmp_path, monkeypatch):
+    """Im Paket: Siegfried findet seine Signaturdatei, ClamAV das Zertifikat für die Signaturen in bin/."""
+    monkeypatch.setattr(system, "CODE", tmp_path)
+    assert system.paket_umgebung() == {}
+    (tmp_path / "bin" / "siegfried").mkdir(parents=True)
+    (tmp_path / "bin" / "clamav" / "certs").mkdir(parents=True)
+    assert system.paket_umgebung() == {"SIEGFRIED_HOME": str(tmp_path / "bin" / "siegfried"),
+                                       "CVD_CERTS_DIR": str(tmp_path / "bin" / "clamav" / "certs")}
+
+
 def test_clamav_konfiguration_je_system(windows):
     from pathlib import PureWindowsPath as W
     windows.setattr(system, "Path", W)

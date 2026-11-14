@@ -1,0 +1,6 @@
+# Entwicklung: Laufzeit plus Notebook 1, Tests und Git-Filter.  .venv/bin/python -m pip install -r requirements-entwicklung.txt
+-r requirements.txt
+ipykernel         # Notebook 1
+nbformat          # Plotly-Diagramme im Notebook anzeigen
+pytest            # automatische Tests (Entscheidung 05.11.2026): .venv/bin/python -m pytest
+nbstripout        # Git-Filter, entfernt Notebook-Ausgaben beim Commit (einmalig: nbstripout --install)

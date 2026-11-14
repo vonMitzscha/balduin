@@ -5,7 +5,7 @@ Die Tests prüfen bei jeder Änderung, ob Balduin noch tut, was es zusagt. Was B
 ## Ausführen
 
 ```sh
-.venv/bin/python -m pip install -r requirements.txt     # einmalig, bringt pytest mit
+.venv/bin/python -m pip install -r requirements-entwicklung.txt     # einmalig, bringt pytest mit
 .venv/bin/python -m pytest                              # alle Tests, rund 30 s
 .venv/bin/python -m pytest -m "not integration"         # nur die schnellen, ohne Testplatten (rund 6 s)
 .venv/bin/python -m pytest tests/test_bewertung.py -x   # eine Datei, beim ersten Fehler anhalten

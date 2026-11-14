@@ -31,7 +31,7 @@ from export.schema import SCHEMA_EXPORT, tabellen_umstellen
 
 CODE = Path(__file__).resolve().parent.parent        # Ordner mit Tool, Notebooks und vorgaben/ (im Git)
 MODELLE = CODE / "modelle"                           # Modelle der Bildanalyse (nicht im Git; werkzeuge/modelle_laden.py)
-PROJEKTE = CODE.parent / "Projekte"                  # Vorgabe-Ablageort für Projekte (Entscheidung 30.10.2026)
+PROJEKTE = system.projekte_vorgabe()                 # Vorgabe-Speicherort für Projekte (Git: neben dem Code)
 ZULETZT = system.zuletzt_datei()                     # zuletzt geöffnete Projekte; schreibt das Tool
 PROJEKT_DATEI = "projekt.json"
 

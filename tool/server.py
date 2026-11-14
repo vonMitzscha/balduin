@@ -48,8 +48,7 @@ from erschliessung import SCHEMA as SCHEMA_ERSCHLIESSUNG, Erschliessung   # Vorl
 from pakete import SCHEMA as SCHEMA_PAKETE, Pakete, tabellen_umstellen    # Modul 4 Bestand und Export (tool/)
 
 # EINSTELLUNG: Pfade und Port (lassen sich beim Start mit --projekt, --port … überschreiben)
-CODE = Path(__file__).resolve().parent.parent  # Ordner mit Tool und erfassung/ (im Git)
-PROJEKTE = CODE.parent / "Projekte"            # Vorgabe-Ablageort neuer Projekte, wie in erfassung/basis.py
+CODE = Path(__file__).resolve().parent.parent  # Ordner mit Tool und erfassung/ (im Git bzw. im Paket)
 PORT = 8765
 ARBEITSPLATTE = None                           # nur Tests: Datenträger für Vorschaubilder statt dem aus projekt.json
 
@@ -58,8 +57,15 @@ WEB = Path(__file__).resolve().parent / "web"
 
 def version():
     """Versionszähler für die Kopfleiste: 0.<Zahl der Commits>; ohne Git nur „0“.
+    Im öffentlichen Spiegel und im Paket steht er in der Datei VERSION, die vorgeht (Entscheidung 14.11.2026).
     safe.directory=*: Git verweigert sonst die Auskunft, wenn der Code-Ordner einem anderen Konto gehört (unter
     Windows häufig: anderes Konto, freigegebener Ordner; Feedback 14.11.2026). Gilt nur für diesen lesenden Aufruf."""
+    try:
+        datei = (CODE / "VERSION").read_text(encoding="utf-8").strip()
+    except OSError:
+        datei = ""
+    if re.fullmatch(r"\d+(\.\d+)+", datei):
+        return datei
     try:
         zahl = subprocess.run([system.werkzeug("git"), "-c", "safe.directory=*", "-C", str(CODE), "rev-list", "--count",
                                "HEAD"], capture_output=True, text=True, timeout=5, **system.prozess_optionen()).stdout.strip()
@@ -86,6 +92,7 @@ def system_modul():
 _SYSTEM = None
 system = system_modul()                        # Plattformabhängiges (Datenträger, Prozesse, Dialoge) nur über system
 VERSION = version()                            # einmal beim Start ermitteln
+PROJEKTE = system.projekte_vorgabe()           # Git: Projekte/ neben dem Code; Paket: Dokumente/Balduin-Projekte
 ZULETZT = system.zuletzt_datei()               # zuletzt geöffnete Projekte (macOS ~/Library/Application Support/Balduin)
 VOLUMES = system.VOLUMES                       # macOS /Volumes, Windows die Laufwerksbuchstaben (Tests: ein Ordner)
 # Eastereggs (Entscheidungen 05. und 13.11.2026): Die Seite trägt lang="de-AT" bzw. "de-CH", sprache.js zeigt dann
@@ -2830,6 +2837,8 @@ def main():
     parser.add_argument("--zuletzt", default=ZULETZT, type=Path, help="Tests: Liste der zuletzt geöffneten Projekte")
     parser.add_argument("--kein-browser", action="store_true", help="Browser nicht automatisch öffnen")
     args = parser.parse_args()
+    for name, wert in system.paket_umgebung().items():    # Paket: Siegfried und ClamAV finden ihre Dateien in bin/
+        os.environ.setdefault(name, wert)
     ARBEITSPLATTE, VOLUMES, PROJEKTE, ZULETZT = args.arbeitsplatte, args.volumes, args.projekte, args.zuletzt
     Anfrage.port = args.port
     if args.projekt:

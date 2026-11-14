@@ -34,3 +34,46 @@ def test_freshclam_fehler_wird_genannt(tmp_path, monkeypatch, capsys):
     ausgabe = capsys.readouterr().out
     assert "Database test FAILED" in ausgabe
     assert "ohne Internet?" not in ausgabe
+
+
+def test_mitgeliefertes_clamav_haelt_signaturen_im_datenordner(tmp_path, monkeypatch):
+    """Im Paket ist der Programmordner nicht beschreibbar: Signaturen und Einstellung liegen im Datenordner der App
+    (Entscheidung 14.11.2026). Ein ClamAV aus Homebrew oder der Paketverwaltung bleibt bei seinen Vorgaben."""
+    code = tmp_path / "code"
+    monkeypatch.setattr(v.system, "CODE", code)
+    monkeypatch.setattr(v.system, "app_daten", lambda: tmp_path / "daten")
+    assert v.eigene_signaturen(str(code / "bin" / "clamav" / "freshclam")) == tmp_path / "daten" / "clamav"
+    assert v.eigene_signaturen(str(tmp_path / "homebrew" / "bin" / "freshclam")) is None
+
+
+def test_mitgeliefertes_freshclam_mit_eigener_einstellung(tmp_path, monkeypatch, capsys):
+    """freshclam bekommt eine Einstellung mit DatabaseDirectory im Datenordner, clamscan liest von dort."""
+    code = tmp_path / "code"
+    aufruf = tmp_path / "aufruf.txt"
+    from hilfen.plattform import ersatzprogramm
+    freshclam = ersatzprogramm(code / "bin" / "clamav", "freshclam",
+                               f"import sys\nopen({str(aufruf)!r}, 'w', encoding='utf-8').write(' '.join(sys.argv[1:]))\n")
+    monkeypatch.setattr(v.system, "CODE", code)
+    monkeypatch.setattr(v.system, "app_daten", lambda: tmp_path / "daten")
+    monkeypatch.setattr(v, "clamav_programm", lambda name: freshclam)
+    monkeypatch.setattr(v.system, "signaturen_selbst_auffrischen", lambda: True)
+    monkeypatch.setattr(v, "clamav_stand", lambda: "ClamAV 1.5.4")
+    v.signaturen_auffrischen(hoechstens_tage=0)
+    konf = tmp_path / "daten" / "clamav" / "freshclam.conf"
+    text = konf.read_text(encoding="utf-8")
+    assert f"DatabaseDirectory {tmp_path / 'daten' / 'clamav' / 'db'}" in text
+    assert "DatabaseMirror database.clamav.net" in text
+    assert (tmp_path / "daten" / "clamav" / "db").is_dir()
+    assert aufruf.read_text(encoding="utf-8") == f"--config-file={konf}"
+
+
+def test_clamav_optionen_im_paket(tmp_path, monkeypatch):
+    """clamscan (Stand) und clamd lesen die Signaturen aus dem Datenordner; sonst keine Zusatzangaben."""
+    code = tmp_path / "code"
+    monkeypatch.setattr(v.system, "CODE", code)
+    monkeypatch.setattr(v.system, "app_daten", lambda: tmp_path / "daten")
+    db = tmp_path / "daten" / "clamav" / "db"
+    assert v.datenbank_option(str(code / "bin" / "clamav" / "clamscan")) == [f"--database={db}"]
+    assert v.datenbank_zeile(str(code / "bin" / "clamav" / "clamd")) == f"DatabaseDirectory {db}\n"
+    assert v.datenbank_option("/usr/bin/clamscan") == []
+    assert v.datenbank_zeile("/usr/sbin/clamd") == ""
