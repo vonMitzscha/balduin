@@ -3,7 +3,7 @@ Balduin für Linux – ALPHA-VERSION
 
 Diese Fassung ist eine Alpha-Version: Balduin läuft unter Linux, ist dort aber erst mit nachgestellten
 Systemantworten geprüft, noch nicht an einem echten Arbeitsplatz. Bitte zuerst mit Testdaten ausprobieren und
-Fehler melden: https://github.com/vonMitzscha/balduin/issues
+Fehler über die Issues der Projektseite melden
 
 Starten
   ./balduin.sh               im Terminal (Fenster offen lassen, solange gearbeitet wird)
