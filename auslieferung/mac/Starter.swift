@@ -81,19 +81,28 @@ final class Starter: NSObject, NSApplicationDelegate {
         }
     }
 
-    // Der Server endet von selbst: Balduin lief schon (Browser wurde dorthin geöffnet) oder ein Fehler
+    // Der Server endet von selbst: ein anderes Balduin belegt die Adresse (der Browser wurde dorthin geöffnet) oder ein
+    // Fehler. Ein zweiter Start dieser App kommt hier nicht an (macOS aktiviert dann die laufende), also ist das andere
+    // Balduin eines außerhalb der App, z. B. aus einem Terminalfenster.
     func serverBeendet(_ prozess: Process) {
         if beendetSelbst { return }
         if prozess.terminationStatus != 0 {
             fehler("Balduin wurde unerwartet beendet.", letzteZeilen())
+        } else if logText().contains("läuft bereits") {
+            fehler("Balduin läuft schon in einem anderen Fenster.",
+                   "Der Browser zeigt dieses andere Balduin. Um die App zu nutzen, das andere Balduin beenden "
+                   + "(zum Beispiel sein Terminalfenster schließen) und die App erneut öffnen.")
         }
         NSApp.terminate(nil)
     }
 
-    func letzteZeilen() -> String {
+    func logText() -> String {
         let datei = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/Balduin/server.log")
-        let text = (try? String(contentsOf: datei, encoding: .utf8)) ?? ""
-        let zeilen = text.split(separator: "\n").suffix(6).joined(separator: "\n")
+        return (try? String(contentsOf: datei, encoding: .utf8)) ?? ""
+    }
+
+    func letzteZeilen() -> String {
+        let zeilen = logText().split(separator: "\n").suffix(6).joined(separator: "\n")
         return zeilen + "\n\nAlle Meldungen: ~/Library/Logs/Balduin/server.log"
     }
 

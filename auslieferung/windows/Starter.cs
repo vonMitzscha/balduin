@@ -138,6 +138,17 @@ static class Starter
             MessageBox.Show("Balduin wurde unerwartet beendet.\n\n" + text + "\n\nAlle Meldungen: " + logPfad, "Balduin",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
+        else
+        {
+            // Ein anderes Balduin (außerhalb dieser App, z. B. aus einer Konsole) belegt die Adresse; der Browser zeigt es
+            string text = "";
+            lock (log) { log.Flush(); }
+            try { text = File.ReadAllText(logPfad, System.Text.Encoding.UTF8); } catch (Exception) { }
+            if (text.Contains("läuft bereits"))
+                MessageBox.Show("Balduin läuft schon in einem anderen Fenster.\n\nDer Browser zeigt dieses andere Balduin. "
+                                + "Um die App zu nutzen, das andere Balduin beenden und die App erneut öffnen.", "Balduin",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
         Aufraeumen();
         Application.Exit();
     }

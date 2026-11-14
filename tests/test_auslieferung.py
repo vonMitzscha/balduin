@@ -69,3 +69,12 @@ def test_starter_nutzen_den_port_des_servers():
 def test_linux_ist_als_alpha_gekennzeichnet():
     assert "ALPHA" in (AUS / "linux" / "balduin.sh").read_text(encoding="utf-8")
     assert bauen["PLATTFORMEN"]["linux-x86_64"][1].endswith("alpha")
+
+
+def test_starter_erkennen_ein_anderes_balduin():
+    """Belegt ein Balduin außerhalb der App die Adresse, beendet sich der Server mit „läuft bereits“; die Starter
+    erkennen das an diesem Text und erklären es, statt still zu verschwinden (Feedback 14.11.2026)."""
+    assert "Balduin läuft bereits" in (CODE / "tool" / "server.py").read_text(encoding="utf-8")
+    for starter in (AUS / "mac" / "Starter.swift", AUS / "windows" / "Starter.cs"):
+        text = starter.read_text(encoding="utf-8")
+        assert "läuft bereits" in text and "Balduin läuft schon in einem anderen Fenster." in text, starter
