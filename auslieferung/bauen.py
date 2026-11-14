@@ -238,8 +238,9 @@ def python_einrichten(ziel, plattform, ablage):
     # checked-hash: auch nach dem Kopieren durch Installer oder Finder gültig, geänderter Code wird neu übersetzt
     ausfuehren([py, "-m", "compileall", "-q", "-j", "0", "--invalidation-mode", "checked-hash",
                 *[ziel / o for o in CODE_ORDNER]], env=umgebung)
-    ausfuehren([py, "-c", "import pandas, numpy, PIL, plotly, onnxruntime, pyfsapfs, pyfshfs, pytsk3, jsonschema; "
-                          "print('Pakete vollständig')"], env=umgebung)
+    # Probe: Balduins eigene Module mit dem Python im Paket laden; fehlt ein Paket, scheitert der Bau hier
+    ausfuehren([py, "-c", "import erfassung.lauf, erfassung.dashboard, vorlauf.sujet, vorlauf.normdaten, export.bauen, "
+                          "onnxruntime, pyfsapfs, pyfshfs, pytsk3; print('Pakete vollständig')"], env=umgebung, cwd=ziel)
 
 
 def python_programm(ziel, plattform):

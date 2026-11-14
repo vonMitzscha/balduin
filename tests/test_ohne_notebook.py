@@ -31,7 +31,7 @@ def test_keine_notebook_pakete():
 
 
 def test_code_ohne_ipython_und_matplotlib():
-    for ordner in ("erfassung", "vorlauf", "export", "tool"):
+    for ordner in ("erfassung", "vorlauf", "export", "tool", "auslieferung"):
         for datei in (CODE / ordner).rglob("*.py"):
             text = datei.read_text(encoding="utf-8")
             assert "IPython" not in text and "matplotlib" not in text and "plotly" not in text, datei
