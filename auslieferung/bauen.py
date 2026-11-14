@@ -319,10 +319,14 @@ def mac_homebrew_werkzeuge(bin_):
     ausfuehren(["brew", "install", "--quiet", "poppler", "clamav", "smartmontools", "dylibbundler"])
     praefix = lambda paket: Path(subprocess.run(["brew", "--prefix", *([paket] if paket else [])],
                                                 capture_output=True, text=True, check=True).stdout.strip())
-    gruppen = {"poppler": [praefix("poppler") / "bin" / n for n in ("pdftotext", "pdftoppm", "pdfinfo")],
-               "clamav": [praefix("clamav") / "bin" / "clamscan", praefix("clamav") / "bin" / "freshclam",
-                          praefix("clamav") / "sbin" / "clamd"],
-               "smartmontools": [praefix("smartmontools") / "sbin" / "smartctl"]}
+    def programm(paket, name):                   # je nach Formel in bin/ oder sbin/
+        for teil in ("bin", "sbin"):
+            if (pfad := praefix(paket) / teil / name).exists():
+                return pfad
+        raise SystemExit(f"{name} fehlt in Homebrew ({paket})")
+    gruppen = {"poppler": [programm("poppler", n) for n in ("pdftotext", "pdftoppm", "pdfinfo")],
+               "clamav": [programm("clamav", n) for n in ("clamscan", "freshclam", "clamd")],
+               "smartmontools": [programm("smartmontools", "smartctl")]}
     for gruppe, programme in gruppen.items():
         ordner = bin_ / gruppe
         ordner.mkdir()
