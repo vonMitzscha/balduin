@@ -11,6 +11,9 @@ on:
 permissions:
   contents: write
 
+env:
+  PYTHONUTF8: "1"                     # Windows-Runner: Ausgaben und Dateien in UTF-8 statt cp1252
+
 jobs:
   bauen:
     name: ${{ matrix.name }}

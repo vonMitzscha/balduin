@@ -124,6 +124,7 @@ def melden(text):
 
 def ausfuehren(befehl, **k):
     print("  $", " ".join(map(str, befehl)), flush=True)
+    k.setdefault("stdin", subprocess.DEVNULL)        # nie auf eine Eingabe warten (dylibbundler fragt sonst endlos)
     subprocess.run([str(b) for b in befehl], check=True, **k)
 
 
@@ -316,8 +317,8 @@ def mac_homebrew_werkzeuge(bin_):
     """Poppler, ClamAV und smartctl aus Homebrew mit ihren Bibliotheken (dylibbundler) in Unterordner von bin/."""
     melden("Poppler, ClamAV, smartctl (Homebrew, gebündelt)")
     ausfuehren(["brew", "install", "--quiet", "poppler", "clamav", "smartmontools", "dylibbundler"])
-    praefix = lambda paket: Path(subprocess.run(["brew", "--prefix", paket], capture_output=True, text=True,
-                                                check=True).stdout.strip())
+    praefix = lambda paket: Path(subprocess.run(["brew", "--prefix", *([paket] if paket else [])],
+                                                capture_output=True, text=True, check=True).stdout.strip())
     gruppen = {"poppler": [praefix("poppler") / "bin" / n for n in ("pdftotext", "pdftoppm", "pdfinfo")],
                "clamav": [praefix("clamav") / "bin" / "clamscan", praefix("clamav") / "bin" / "freshclam",
                           praefix("clamav") / "sbin" / "clamd"],
@@ -328,8 +329,11 @@ def mac_homebrew_werkzeuge(bin_):
         for p in programme:
             shutil.copy2(p.resolve(), ordner / p.name)
             (ordner / p.name).chmod(0o755)
+        # Suchpfade für Bibliotheken mit @rpath; ohne sie fragt dylibbundler nach (Eingabe ist geschlossen)
+        suche = [praefix("") / "lib", *{p.parent.parent / "lib" for p in programme}]
         ausfuehren(["dylibbundler", "-of", "-b", "-cd", *sum((["-x", ordner / p.name] for p in programme), []),
-                    "-d", ordner / "lib", "-p", "@executable_path/lib/"])
+                    *sum((["-s", s] for s in suche), []), "-d", ordner / "lib", "-p", "@executable_path/lib/"],
+                   timeout=600)
     certs = Path(subprocess.run(["brew", "--prefix"], capture_output=True, text=True, check=True).stdout.strip()) \
         / "etc" / "clamav" / "certs"
     if certs.is_dir():
@@ -476,6 +480,8 @@ def linux_paket(ordner, plattform, ausgabe, ablage):
 # ---------- Ablauf ----------
 
 def main():
+    for strom in (sys.stdout, sys.stderr):           # Windows-Konsole (cp1252) kennt „▸“ und Umlaute sonst nicht
+        strom.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--ziel", type=Path, default=CODE.parent / "balduin-bau", help="Arbeits- und Ausgabeordner")
     ap.add_argument("--nur-ordner", action="store_true", help="nur den Programmordner, kein Paket")
