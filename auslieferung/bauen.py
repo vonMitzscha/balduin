@@ -465,7 +465,7 @@ def windows_paket(ordner, plattform, ausgabe, ablage):
     for name in ("balduin.iss", "nach_der_installation.txt"):
         shutil.copy2(HIER / "windows" / name, ablage / name)
     iscc = shutil.which("ISCC") or r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-    ausfuehren([iscc, f"/DVersion={version()}", f"/DQuelle={ordner}", f"/DAusgabe={ausgabe}", ablage / "balduin.iss"])
+    ausfuehren([iscc, "/Qp", f"/DVersion={version()}", f"/DQuelle={ordner}", f"/DAusgabe={ausgabe}", ablage / "balduin.iss"])
     return ausgabe / f"Balduin-{version()}-Windows-Setup.exe"
 
 
