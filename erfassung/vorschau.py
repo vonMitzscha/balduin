@@ -360,7 +360,8 @@ def vorschauen_erzeugen(platte_id, wurzel, neu_versuchen=False):
         lauf_id = con.execute("INSERT INTO scanlauf (platte_id, art, start) VALUES (?,?,?)",
                               (platte_id, "vorschau", jetzt())).lastrowid
     erledigt = ohne = 0
-    start = letzte = time.monotonic()
+    letzte = time.monotonic()
+    schaetzer = Restzeit(len(k))
     unterbrochen = False
     with db() as con:
         try:
@@ -382,9 +383,8 @@ def vorschauen_erzeugen(platte_id, wurzel, neu_versuchen=False):
                 if time.monotonic() - letzte > 2:
                     con.commit()
                     letzte = time.monotonic()
-                    minuten = (letzte - start) / 60
                     fortschritt(erledigt / len(k), f"{erledigt:,}/{len(k):,} · ohne Vorschau {ohne:,} · "
-                                f"{restzeit(minuten / erledigt * (len(k) - erledigt))}")
+                                f"{schaetzer.text(erledigt)}")
         except KeyboardInterrupt:
             unterbrochen = True
         con.execute("UPDATE scanlauf SET ende = ?, dateien = ?, fehler = ? WHERE lauf_id = ?",

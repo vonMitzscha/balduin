@@ -15,7 +15,7 @@ python3.13 -m venv .venv
 .venv/bin/python -m pytest -m "not integration"   # kurze Kontrolle
 ```
 
-Die Modelle stehen nicht im Repo (Herkunft, Lizenz und Größe in `modelle/LIESMICH.md`).
+Die Modelle stehen nicht im Repo (Herkunft, Lizenz und Größe in `modelle/README.md`).
 
 **Code verschieben:** Eine venv merkt sich ihren Ort und läuft nach dem Verschieben nicht mehr zuverlässig. Danach
 `rm -rf .venv` und die venv wie oben neu anlegen. Projekte bleiben davon unberührt.
@@ -104,7 +104,7 @@ Sicherung der Datenbank im Projektordner: `sqlite3 inventar.sqlite ".backup 'inv
 
 ## 8. Entwicklung
 
-- Tests: `.venv/bin/python -m pytest` (alle), `-m "not integration"` (schnell); mehr in `tests/LIESMICH.md`. Tests
+- Tests: `.venv/bin/python -m pytest` (alle), `-m "not integration"` (schnell); mehr in `tests/README.md`. Tests
   berühren nie echte Datenträger und nie eine echte Anton-Instanz.
 - Der Server nutzt nur die Python-Standardbibliothek; Rechenintensives läuft als Hintergrundlauf (`erfassung/lauf.py`).
 - Plattformabhängiges steht nur in `erfassung/system.py`; die Oberfläche (`tool/web/`) kommt ohne Build-Schritt und

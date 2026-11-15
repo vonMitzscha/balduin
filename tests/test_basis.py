@@ -182,3 +182,53 @@ def test_testinstanz_im_projekt_vermerken(leeres_projekt):
     assert basis.P.einstellungen["anton"]["testinstanz"] is False            # auch ältere projekt.json ohne den Schlüssel
     r = basis.einstellungen_aendern({"anton": {"url": "https://archiv.example.org", "testinstanz": 1}})
     assert "anton" in r["geaendert"] and basis.P.einstellungen["anton"]["testinstanz"] is True
+
+
+# ---------- Restzeit (Entscheidung 14.11.2026) ----------
+
+class Uhr:
+    def __init__(self):
+        self.t = 0.0
+
+    def __call__(self):
+        return self.t
+
+
+def test_restzeit_aus_dem_tempo_der_letzten_minuten():
+    uhr = Uhr()
+    r = basis.Restzeit(1000, fenster=120, uhr=uhr)
+    assert r.text(0) == "Restzeit wird geschätzt …"
+    for _ in range(10):                          # 10 je Sekunde
+        uhr.t += 2
+        r.melden(r.erledigt + 20)
+    assert r.tempo == pytest.approx(10)
+    assert r.minuten() == pytest.approx(800 / 10 / 60)
+    for _ in range(100):                         # jetzt nur noch 1 je Sekunde: das alte Tempo fällt aus dem Fenster
+        uhr.t += 2
+        r.melden(r.erledigt + 2)
+    assert r.tempo == pytest.approx(1)
+
+
+def test_restzeit_uebersteht_den_ruhezustand():
+    """Fehler unter Windows (14.11.2026): Nach Stunden im Ruhezustand stieg die Restzeit auf rund 10 Std., weil die
+    Pause als Arbeitszeit zählte. Eine Lücke länger als das Fenster beginnt das Fenster neu, das Tempo bleibt."""
+    uhr = Uhr()
+    r = basis.Restzeit(100_000, fenster=120, uhr=uhr)
+    for _ in range(60):
+        uhr.t += 2
+        r.melden(r.erledigt + 200)               # 100 je Sekunde
+    vorher = r.minuten()
+    uhr.t += 5 * 3600                            # Ruhezustand
+    r.melden(r.erledigt + 200)
+    assert r.tempo == pytest.approx(100)
+    assert r.minuten() == pytest.approx(vorher - 200 / 100 / 60)
+    uhr.t += 2
+    r.melden(r.erledigt + 200)
+    assert r.tempo == pytest.approx(100)
+
+
+def test_restzeit_text_wie_bisher():
+    uhr = Uhr()
+    r = basis.Restzeit(7200, uhr=uhr)
+    uhr.t = 60
+    assert r.text(60) == "noch ca. 1 Std. 59 Min."

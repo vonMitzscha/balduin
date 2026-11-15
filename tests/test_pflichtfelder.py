@@ -66,3 +66,56 @@ def test_symbole_im_erklaertext_des_assistenten():
         assert "icon(" not in text, text
     assert "{zahnrad}" in schritte
     assert 'esc(s.text).replaceAll("{zahnrad}", icon("settings"))' in PROJEKT
+
+
+# ---- Roter Rahmen um leere Pflichtfelder (Feedback 14.11.2026) ----
+import json
+import shutil
+import subprocess
+
+FAKE_DOM = """
+globalThis.window = {};
+const eingabe = (value, { disabled = false, freiwillig = false, vorschlag = false } = {}) => {
+  const k = new Set();
+  return { value, disabled, dataset: freiwillig ? { freiwillig: "" } : {}, k,
+           classList: { toggle: (n, an) => { an ? k.add(n) : k.delete(n); } },
+           closest: (s) => (vorschlag && s === ".es-vorschlaege" ? {} : null) };
+};
+const feld = (eingaben) => ({ querySelectorAll: () => eingaben });
+const marke = (f) => ({ closest: () => f });
+"""
+
+
+def markieren(faelle):
+    """faelle: JS-Ausdruck, der eine Liste von Eingabelisten liefert; Antwort je Fall, welche rot sind."""
+    code = FAKE_DOM + (WEB / "icons.js").read_text(encoding="utf-8") + f"""
+const faelle = {faelle};
+pflichtMarkieren({{ querySelectorAll: () => faelle.map((e) => marke(feld(e))) }});
+process.stdout.write(JSON.stringify(faelle.map((e) => e.map((x) => x.k.has("pflicht-leer")))));
+"""
+    r = subprocess.run(["node", "-e", code], capture_output=True, text=True, timeout=30)
+    assert not r.returncode, r.stderr
+    return json.loads(r.stdout)
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="node fehlt")
+def test_leeres_pflichtfeld_rot_bis_etwas_drinsteht():
+    assert markieren('[[eingabe("")], [eingabe("  ")], [eingabe("AB")]]') == [[True], [True], [False]]
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="node fehlt")
+def test_ein_wert_genuegt_freiwilliges_und_gesperrtes_bleibt_ohne():
+    # Laufzeit: Tag, Monat, Jahr „von“; „bis“ ist freiwillig; gesperrtes Feld (Kürzel nach Registrierung) nie rot
+    assert markieren('[[eingabe(""), eingabe(""), eingabe(""), eingabe("", { freiwillig: true })],'
+                     ' [eingabe(""), eingabe("1987"), eingabe("", { freiwillig: true })],'
+                     ' [eingabe("", { disabled: true })], [eingabe("", { vorschlag: true })]]') == [
+        [True, True, True, False], [False, False, False], [False], [False]]
+
+
+def test_rahmen_in_css_und_laufend_nachgefuehrt():
+    css = (WEB / "app.css").read_text(encoding="utf-8")
+    assert re.search(r"\.pflicht-leer[^{]*\{[^}]*var\(--a-rot\)", css)
+    icons = (WEB / "icons.js").read_text(encoding="utf-8")
+    assert "MutationObserver" in icons and '"input"' in icons
+    es = (WEB / "erschliessung.js").read_text(encoding="utf-8")
+    assert 'seite === "bis" ? " data-freiwillig' in es                 # „bis“ der Laufzeit ist kein Pflichtteil

@@ -59,6 +59,18 @@ def test_symbole_im_dmg_passen_zum_hintergrund():
     assert f"os.path.basename(app): {zeichnen['APP']}" in text
     assert f'"Programme": {zeichnen["PROGRAMME"]}' in text
     assert (AUS / "mac" / "hintergrund.png").is_file() and (AUS / "mac" / "hintergrund@2x.png").is_file()
+    assert f"icon_size = {zeichnen['SYMBOL']}" in text          # Elefant passt nur bei gleicher Symbolgröße
+
+
+def test_dmg_hintergrund_weiss_mit_blassem_elefanten_hinter_dem_symbol():
+    from PIL import Image
+    for name, m in (("hintergrund.png", 1), ("hintergrund@2x.png", 2)):
+        bild = Image.open(AUS / "mac" / name).convert("RGB")
+        assert bild.getpixel((m * 5, m * 5)) == (255, 255, 255)   # Grund weiß, kein Verlauf
+        assert bild.getpixel((bild.width - 1, bild.height - 1)) == (255, 255, 255)
+        # Rumpf rechts neben dem Symbol: gezeichnet, aber blass
+        rumpf = bild.crop((m * 380, m * 110, m * 460, m * 150)).convert("L")
+        assert 150 < min(rumpf.getdata()) and sum(rumpf.getdata()) / (80 * 40 * m * m) < 250
 
 
 def test_starter_und_installer_teilen_die_sperre():
@@ -101,3 +113,25 @@ def test_installer_bietet_lange_pfade_auch_ohne_administratorrechte_an():
     assert lauf, "kein Eintrag unter [Run] für lange Pfade"
     assert "Verb: runas" in lauf[0] and "not IsAdminInstallMode" in lauf[0] and "not LangePfadeAn" in lauf[0]
     assert "function LangePfadeAn" in iss
+
+
+def test_ausfuehren_wiederholt_bei_netzfehlern(monkeypatch):
+    """Ein kurzer Netzausfall (z. B. go install → sum.golang.org) bricht den Bau nicht ab."""
+    sp, fehler = bauen["subprocess"], bauen["subprocess"].CalledProcessError
+    aufrufe = []
+
+    def run(befehl, **k):
+        aufrufe.append(befehl)
+        if len(aufrufe) < 3:
+            raise fehler(1, befehl)
+
+    monkeypatch.setattr(sp, "run", run)
+    monkeypatch.setattr(bauen["time"], "sleep", lambda s: None)
+    bauen["ausfuehren"](["go", "install", "x"], versuche=4)
+    assert len(aufrufe) == 3
+
+    aufrufe.clear()
+    monkeypatch.setattr(sp, "run", lambda b, **k: aufrufe.append(b) or (_ for _ in ()).throw(fehler(1, b)))
+    with pytest.raises(fehler):
+        bauen["ausfuehren"](["go"], versuche=2)
+    assert len(aufrufe) == 2

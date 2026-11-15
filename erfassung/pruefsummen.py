@@ -118,6 +118,7 @@ def vollscan_pruefsummen(platte_id, wurzel):
                               (platte_id, "pruefsummen", jetzt())).lastrowid
     erledigt = volumen = fehler = 0
     start = letzte_ausgabe = time.monotonic()
+    schaetzer = Restzeit(gesamt)
     unterbrochen = False
     with db() as con:
         try:
@@ -137,11 +138,10 @@ def vollscan_pruefsummen(platte_id, wurzel):
                 if time.monotonic() - letzte_ausgabe > 2:
                     con.commit()
                     letzte_ausgabe = time.monotonic()
-                    tempo = volumen / max(letzte_ausgabe - start, 0.001)
-                    rest = (gesamt - volumen) / max(tempo, 1) / 60
+                    rest = schaetzer.text(volumen)
                     fortschritt(volumen / max(gesamt, 1),
                                 f"{erledigt:,}/{len(offen):,} Dateien · {volumen / 1e9:.1f}/{gesamt / 1e9:.1f} GB · "
-                                f"{tempo / 1e6:.0f} MB/s · {restzeit(rest)}")
+                                f"{schaetzer.tempo / 1e6:.0f} MB/s · {rest}")
         except KeyboardInterrupt:
             unterbrochen = True
         con.execute("UPDATE scanlauf SET ende = ?, dateien = ?, bytes = ?, fehler = ? WHERE lauf_id = ?",

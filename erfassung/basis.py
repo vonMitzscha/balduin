@@ -15,6 +15,7 @@ import subprocess
 import tempfile
 import time
 import unicodedata
+from collections import deque
 from contextlib import closing, contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -644,6 +645,42 @@ def restzeit(minuten):
     if minuten < 60:
         return f"noch ca. {minuten} Min."
     return f"noch ca. {minuten // 60} Std. {minuten % 60} Min."
+
+
+class Restzeit:
+    """Schätzt die Restzeit aus dem Tempo der letzten fenster Sekunden statt seit dem Start (Entscheidung 14.11.2026):
+    Eine Pause wie der Ruhezustand zählte sonst als Arbeitszeit (unter Windows stieg die Restzeit danach auf Stunden).
+    Liegt zwischen zwei Meldungen mehr als ein Fenster, beginnt das Fenster neu und das bisherige Tempo gilt weiter.
+    gesamt und erledigt in derselben Einheit (Dateien, Bytes, Seiten); tempo = Einheiten je Sekunde."""
+
+    def __init__(self, gesamt, fenster=120, uhr=time.monotonic):
+        self.gesamt, self.fenster, self.uhr = gesamt, fenster, uhr
+        self.erledigt, self.tempo = 0, 0.0
+        self.punkte = deque([(uhr(), 0)])
+
+    def melden(self, erledigt):
+        jetzt = self.uhr()
+        if jetzt - self.punkte[-1][0] > self.fenster:      # Pause: Zeit davor nicht als Arbeitszeit zählen
+            self.punkte.clear()
+        self.punkte.append((jetzt, erledigt))
+        while len(self.punkte) > 2 and jetzt - self.punkte[1][0] >= self.fenster:
+            self.punkte.popleft()
+        (t0, e0), (t1, e1) = self.punkte[0], self.punkte[-1]
+        if t1 > t0 and e1 > e0:
+            self.tempo = (e1 - e0) / (t1 - t0)
+        self.erledigt = erledigt
+        return self
+
+    def minuten(self):
+        """Geschätzte Restzeit in Minuten, None, solange es noch kein Tempo gibt."""
+        if self.tempo <= 0:
+            return None
+        return max(self.gesamt - self.erledigt, 0) / self.tempo / 60
+
+    def text(self, erledigt):
+        """Meldet den Stand und liefert die Restzeit als Text wie restzeit()."""
+        minuten = self.melden(erledigt).minuten()
+        return "Restzeit wird geschätzt …" if minuten is None else restzeit(minuten)
 
 
 def fortschritt(anteil, text=""):

@@ -71,16 +71,14 @@ def sf_ergebnisse(pfad, relpfade, optionen, parallel, log, stufe):
     pfad: archivdateien.Pfade (Pfad im Dateisystem je relpfad, auch für Dateien in Archivdateien, und zurück)."""
     with tempfile.NamedTemporaryFile("w", suffix=".txt", encoding="utf-8", delete=False) as liste:
         liste.write("".join(os.path.abspath(pfad(r)) + "\n" for r in relpfade))
-    start = time.monotonic()
+    schaetzer = Restzeit(len(relpfade))
     prozess = subprocess.Popen([system.werkzeug("sf"), *optionen, "-csv", "-coe", "-multi", str(parallel), "-f", liste.name],
                                stdout=subprocess.PIPE, stderr=log, text=True, encoding="utf-8", errors="replace")
     try:
         for anzahl, z in enumerate(csv.DictReader(prozess.stdout), 1):
             yield pfad.relpfad(z["filename"]), z
-            minuten = (time.monotonic() - start) / 60
-            rest = minuten / anzahl * max(len(relpfade) - anzahl, 0)
             fortschritt(anzahl / len(relpfade),
-                        f"{stufe}: {anzahl:,}/{len(relpfade):,} Dateien · {restzeit(rest)}")
+                        f"{stufe}: {anzahl:,}/{len(relpfade):,} Dateien · {schaetzer.text(anzahl)}")
     finally:
         if prozess.poll() is None:
             prozess.terminate()

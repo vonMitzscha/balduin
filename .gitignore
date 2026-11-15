@@ -15,9 +15,13 @@ testplatten/
 # Modelle der Inhaltsanalyse (groß, Bezug: werkzeuge/modelle_laden.py)
 modelle/*.onnx
 modelle/clip_tokenizer.json
+modelle/*.gguf
 
 # Mitgelieferte Werkzeuge des späteren Pakets (system.werkzeug sucht hier zuerst)
 bin/
 
 # fremdes Skill-Repository (nur lokal)
 unslop/
+
+# Ergebnisse von Experimenten (vertraulich: Pfade, Vorschaubilder)
+experimente/*/ergebnisse/

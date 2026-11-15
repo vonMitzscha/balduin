@@ -159,7 +159,8 @@ def personen_erkennen(platte_id):
     print(f"Offen: {len(offen):,} Fotos; Modelle {MODELL} und {GESICHT_MODELL}, "
           f"Rechenwerk {s.get_providers()[0].replace('ExecutionProvider', '')}.")
     erledigt = mit = portraets = fehler = 0
-    start = letzte = time.monotonic()
+    letzte = time.monotonic()
+    schaetzer = Restzeit(len(offen))
     unterbrochen = False
     with db() as con:
         try:
@@ -181,9 +182,8 @@ def personen_erkennen(platte_id):
                 if time.monotonic() - letzte > 2:
                     con.commit()
                     letzte = time.monotonic()
-                    minuten = (letzte - start) / 60
                     fortschritt(erledigt / len(offen), f"{erledigt:,}/{len(offen):,} · mit Personen {mit:,} "
-                                f"(Porträts {portraets:,}) · {restzeit(minuten / erledigt * (len(offen) - erledigt))}")
+                                f"(Porträts {portraets:,}) · {schaetzer.text(erledigt)}")
         except KeyboardInterrupt:
             unterbrochen = True
     protokolliere("F5", platte_id, "personen", "", f"{erledigt} Fotos, {mit} mit Personen, davon {portraet_text(portraets)}, "

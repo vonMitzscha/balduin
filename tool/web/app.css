@@ -972,6 +972,8 @@ details.es-abschnitt:not([open]) > .es-abschnitt-kopf { border-bottom: 0; border
 .es-zeile.anzeige .es-bez { padding-top: 0; }
 /* Pflichtfeld: roter Stern hinter der Bezeichnung (PFLICHT in icons.js), überall gleich */
 .pflicht { color: var(--a-rot); margin-left: 4px; font-weight: 600; }
+/* Leeres Pflichtfeld: roter Rahmen wie beim Fokus, bis etwas drinsteht (pflichtMarkieren in icons.js) */
+.pflicht-leer, .pflicht-leer:focus { border-color: var(--a-rot) !important; outline: 2px solid var(--a-rot); outline-offset: -1px; }
 /* Eingabe mit Knopf daneben (z. B. Passwort und „Prüfen“) */
 .feld-mit-knopf { display: flex; gap: 8px; align-items: center; }
 .feld-mit-knopf input { flex: 1; min-width: 0; }

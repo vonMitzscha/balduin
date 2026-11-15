@@ -378,9 +378,12 @@ def unterbrechen(signum, frame):
         raise KeyboardInterrupt
 
 
-def abbruchwache(db_pfad, lauf_id, takt=1.0):
+def abbruchwache(db_pfad, lauf_id, takt=1.0, kinder_nach=5.0):
     """Liest im Hintergrund die Marke lauf.abbrechen; ist sie gesetzt, unterbricht sie den Lauf wie Ctrl+C (ruft
     unterbrechen() im Hauptfaden). So bricht ein Lauf auch unter Windows ab, wo das Tool kein Signal schicken kann.
+    Die Unterbrechung kommt erst an, wenn der Hauptfaden aus dem Warten auf ein Programm zurückkehrt (Formaterkennung,
+    Metadaten …; nach dem Ruhezustand kann das ewig dauern, Entscheidung 14.11.2026): Ist der Lauf kinder_nach Sekunden
+    später nicht beendet, beendet die Wache die Programme, die er gestartet hat, und wiederholt das, bis er endet.
     Antwort: Ereignis zum Beenden der Wache (set())."""
     fertig = threading.Event()
 
@@ -394,6 +397,13 @@ def abbruchwache(db_pfad, lauf_id, takt=1.0):
             if gesetzt and gesetzt[0] and not fertig.is_set():
                 if not ABBRUCH:
                     _thread.interrupt_main(signal.SIGINT)
+                while not fertig.wait(kinder_nach):       # endet der Lauf nicht: worauf er wartet, beenden
+                    try:
+                        zahl = system.kinder_beenden(os.getpid())
+                    except Exception:                    # nie die Wache selbst scheitern lassen
+                        zahl = 0
+                    if zahl:                              # in einem Stück, damit die Zeile im Log ganz bleibt
+                        sys.stdout.write(f"\nAbbrechen: {zahl} Programm(e) beendet, auf die der Lauf wartete.\n")
                 return
     threading.Thread(target=wache, name="abbruchwache", daemon=True).start()
     return fertig
@@ -463,6 +473,8 @@ def erfassen(lauf_id):
         print(f"Lauf {lauf_id}: {a.get('platte_id') or LAUF_NAMEN.get(art, art)}" + (f" unter {a['mountpunkt']}" if a.get("mountpunkt") else " (ohne Datenträger)")
               + (f", Schritte {', '.join(a['schritte'])}" if a.get("schritte") else "") + f", Projekt {P.ordner}")
         wache = abbruchwache(P.db_pfad, lauf_id)          # erst hier: ein Unterbrechen landet im try darunter
+        # kein Ruhezustand während des Laufs (Entscheidung 14.11.2026); im Hauptfaden, Windows bindet es an ihn
+        wach = system.wach_halten(f"Balduin: {a.get('platte_id') or LAUF_NAMEN.get(art, art)}")
         try:
             leseschicht_vorbereiten(a, passwort)            # Abbild, Mac-Platte: Volume (und Passwort) für alle Schritte
             gewaehlt = (set(a.get("schritte") or []) if art == "vorlauf" else
@@ -512,6 +524,7 @@ def erfassen(lauf_id):
         finally:
             ENDE = True
             wache.set()
+            wach()                                      # Ruhezustand wieder erlauben
             quelle.schliessen()                         # offene Abbilder (unter Windows sonst gesperrt)
             sys.stdout, sys.stderr = sys.__stdout__, sys.__stderr__
             basis.MELDER = None

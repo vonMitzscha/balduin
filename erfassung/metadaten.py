@@ -171,7 +171,15 @@ class ExifTool:
                                         errors="replace")
 
     def lesen(self, pfade):
-        self.prozess.stdin.write("\n".join(EXIF_ARGUMENTE + pfade) + "\n-execute\n")
+        # Argument-Injektion in ExifTools Argumentdatei verhindern (harte Regel 1 „Quellen nur lesen“): ExifTool liest
+        # den -@-Strom zeilenweise und deutet jede Zeile, die mit „-“ beginnt, als Option. Ein Dateiname mit
+        # Zeilenumbruch (auf macOS, HFS+/APFS, erlaubt) könnte so Schreib-Optionen unterschieben und eine Quelldatei
+        # verändern. Solche Pfade gehen nicht an ExifTool (wie bei Siegfried, formate.py); die betroffenen Dateien
+        # gelten dann als „von ExifTool nicht gelesen“. Die Absicherung sitzt hier an der Senke, nicht nur im Aufrufer.
+        sicher = [p for p in pfade if "\n" not in p and "\r" not in p]
+        if not sicher:
+            return []
+        self.prozess.stdin.write("\n".join(EXIF_ARGUMENTE + sicher) + "\n-execute\n")
         self.prozess.stdin.flush()
         zeilen = []
         while (zeile := self.prozess.stdout.readline()).strip() != "{ready}":
@@ -232,7 +240,7 @@ def metadaten_lesen(platte_id, wurzel, stapel=100):
     version = exiftool_version()
     logdatei = P.logs / f"exiftool_{platte_id}_{datetime.now():%Y-%m-%d_%H%M}.log"
     erledigt = 0
-    start = time.monotonic()
+    schaetzer = Restzeit(len(offen))
     unterbrochen = False
     with open(logdatei, "w", encoding="utf-8") as log, db() as con:
         exiftool = ExifTool(log)
@@ -255,9 +263,8 @@ def metadaten_lesen(platte_id, wurzel, stapel=100):
                 con.executemany(sql_voll, voll)
                 con.commit()
                 erledigt += len(teil)
-                minuten = (time.monotonic() - start) / 60
                 fortschritt(erledigt / len(offen), f"{erledigt:,}/{len(offen):,} Dateien · "
-                            f"{restzeit(minuten / erledigt * (len(offen) - erledigt))}")
+                            f"{schaetzer.text(erledigt)}")
         except KeyboardInterrupt:
             unterbrochen = True
         finally:

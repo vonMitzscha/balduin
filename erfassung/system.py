@@ -107,6 +107,191 @@ def _win_prozess_lebt(pid):
         kernel32.CloseHandle(griff)
 
 
+# Läufe wach halten und notfalls beenden (Entscheidung 14.11.2026): Unter Windows erreicht die Unterbrechung einen
+# Lauf nicht, solange er auf ein Programm (Formaterkennung, Metadaten …) oder den Datenträger wartet; nach dem
+# Ruhezustand kann das ewig dauern.
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
+
+
+def wach_halten(grund):
+    """Verhindert den Ruhezustand, solange der aufrufende Lauf lebt (der Bildschirm darf ausgehen). Antwort: Funktion,
+    die ihn wieder erlaubt (mehrfach aufrufbar). Scheitert nie: ohne Werkzeug oder bei Fehlern läuft der Lauf ohne
+    Schutz. Windows: SetThreadExecutionState (gilt für den aufrufenden Faden, also aus dem Hauptfaden aufrufen);
+    Mac: caffeinate -i -w <pid>; Linux: systemd-inhibit mit tail --pid (beide enden von selbst mit dem Lauf)."""
+    if windows():
+        try:
+            if not _win_ausfuehrungszustand(ES_CONTINUOUS | ES_SYSTEM_REQUIRED):
+                return lambda: None
+        except OSError:
+            return lambda: None
+        erledigt = []
+
+        def freigeben():
+            if not erledigt:
+                erledigt.append(True)
+                try:
+                    _win_ausfuehrungszustand(ES_CONTINUOUS)
+                except OSError:
+                    pass
+        return freigeben
+    if mac():
+        programm = werkzeug_pfad("caffeinate")
+        befehl = programm and [programm, "-i", "-w", str(os.getpid())]
+    elif linux():
+        programm, tail = werkzeug_pfad("systemd-inhibit"), werkzeug_pfad("tail")
+        befehl = programm and tail and [programm, "--what=sleep:idle", "--who=Balduin", f"--why={grund}",
+                                        "--mode=block", tail, f"--pid={os.getpid()}", "-f", "/dev/null"]
+    else:
+        befehl = None
+    if not befehl:
+        return lambda: None
+    try:
+        prozess = subprocess.Popen(befehl, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL)
+    except OSError:
+        return lambda: None
+
+    def freigeben():
+        if prozess.poll() is None:
+            prozess.terminate()
+            try:
+                prozess.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                pass
+    return freigeben
+
+
+def kinder(pid):
+    """Alle Prozesse, die pid gestartet hat, mit deren Kindern (Kennungen). Windows über die Prozessliste (nur jüngere
+    als pid, sonst könnten Waisen eines früheren Prozesses mit derselben Kennung dazuzählen); Mac und Linux über pgrep."""
+    if windows():
+        liste = _win_prozesse()
+        start = _win_startzeit(pid)
+        gefunden, offen = [], [pid]
+        while offen:
+            eltern = offen.pop()
+            for k, e in liste:
+                if e == eltern and k != pid and k not in gefunden:
+                    s = _win_startzeit(k)
+                    if start is None or s is None or s >= start:
+                        gefunden.append(k)
+                        offen.append(k)
+        return gefunden
+    programm = werkzeug_pfad("pgrep")
+    if not programm:
+        return []
+    gefunden, offen = [], [pid]
+    while offen:
+        eltern = offen.pop()
+        try:
+            r = subprocess.run([programm, "-P", str(eltern)], capture_output=True, text=True, timeout=10)
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        for k in (int(z) for z in r.stdout.split() if z.isdigit()):
+            if k not in gefunden:
+                gefunden.append(k)
+                offen.append(k)
+    return gefunden
+
+
+def _hart_beenden(pid):
+    if windows():
+        return _win_beenden(pid)
+    try:
+        os.kill(pid, signal.SIGKILL)
+        return True
+    except OSError:
+        return False
+
+
+def kinder_beenden(pid):
+    """Beendet die Programme, die pid gestartet hat (Enkel zuerst), damit ein Lauf, der auf deren Ausgabe wartet,
+    weiterkommt. pid selbst bleibt. Antwort: Zahl der beendeten Prozesse."""
+    zahl = 0
+    for k in reversed(kinder(pid)):
+        if lebt(k) and _hart_beenden(k):
+            zahl += 1
+    return zahl
+
+
+def beenden(pid):
+    """Beendet einen Lauf hart samt den Programmen, die er gestartet hat (Rückfall, wenn er auf „Abbrechen“ nicht
+    reagiert). True = er lief und wurde beendet."""
+    if not lebt(pid):
+        return False
+    kinder_beenden(pid)
+    return _hart_beenden(pid)
+
+
+def _win_ausfuehrungszustand(zustand):
+    import ctypes
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.SetThreadExecutionState.restype = ctypes.c_uint
+    return kernel32.SetThreadExecutionState(ctypes.c_uint(zustand)) != 0
+
+
+def _win_prozesse():
+    """[(Kennung, Kennung des Elternprozesses)] aller Prozesse (Toolhelp-Schnappschuss)."""
+    import ctypes
+    from ctypes import wintypes
+
+    class PROCESSENTRY32W(ctypes.Structure):
+        _fields_ = [("dwSize", wintypes.DWORD), ("cntUsage", wintypes.DWORD), ("th32ProcessID", wintypes.DWORD),
+                    ("th32DefaultHeapID", ctypes.c_size_t), ("th32ModuleID", wintypes.DWORD),
+                    ("cntThreads", wintypes.DWORD), ("th32ParentProcessID", wintypes.DWORD),
+                    ("pcPriClassBase", ctypes.c_long), ("dwFlags", wintypes.DWORD),
+                    ("szExeFile", ctypes.c_wchar * 260)]
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    schnappschuss = kernel32.CreateToolhelp32Snapshot(0x00000002, 0)          # TH32CS_SNAPPROCESS
+    if not schnappschuss or schnappschuss == wintypes.HANDLE(-1).value:
+        return []
+    try:
+        eintrag = PROCESSENTRY32W()
+        eintrag.dwSize = ctypes.sizeof(PROCESSENTRY32W)
+        liste = []
+        ok = kernel32.Process32FirstW(schnappschuss, ctypes.byref(eintrag))
+        while ok:
+            liste.append((eintrag.th32ProcessID, eintrag.th32ParentProcessID))
+            ok = kernel32.Process32NextW(schnappschuss, ctypes.byref(eintrag))
+        return liste
+    finally:
+        kernel32.CloseHandle(schnappschuss)
+
+
+def _win_startzeit(pid):
+    """Startzeit eines Prozesses (FILETIME als Zahl) oder None."""
+    import ctypes
+    from ctypes import wintypes
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    griff = kernel32.OpenProcess(0x1000, False, pid)                  # PROCESS_QUERY_LIMITED_INFORMATION
+    if not griff:
+        return None
+    try:
+        zeiten = [wintypes.FILETIME() for _ in range(4)]
+        if not kernel32.GetProcessTimes(griff, *(ctypes.byref(z) for z in zeiten)):
+            return None
+        return float((zeiten[0].dwHighDateTime << 32) | zeiten[0].dwLowDateTime)
+    finally:
+        kernel32.CloseHandle(griff)
+
+
+def _win_beenden(pid):
+    import ctypes
+    from ctypes import wintypes
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    griff = kernel32.OpenProcess(0x0001, False, pid)                  # PROCESS_TERMINATE
+    if not griff:
+        return False
+    try:
+        return bool(kernel32.TerminateProcess(griff, 1))
+    finally:
+        kernel32.CloseHandle(griff)
+
+
 # ---------- Datenträger ----------
 # macOS hängt Datenträger unter /Volumes ein. Unter Windows sind es die Laufwerksbuchstaben; VOLUMES steht dort nur
 # als Marke für „alle Laufwerke“ und wird nie als Ordner gelesen. In Tests ist volumes ein gewöhnlicher Ordner, dessen
@@ -957,6 +1142,13 @@ def _security(*befehl, eingabe=None):
                           input=eingabe, capture_output=True, text=True, timeout=30)
 
 
+def _security_quote(wert):
+    """Maskiert einen Wert für die in Anführungszeichen stehenden Argumente der Argumentliste von `security -i`:
+    Backslash und Anführungszeichen. Ohne das bricht ein Token mit `"` oder `\\` aus der Quotierung aus; `security`
+    lehnt den Befehl dann ab (Exit-Code 2) und der Token wird nicht abgelegt. Backslash zuerst, dann das Zitatzeichen."""
+    return wert.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def geheimnis_lesen(dienst):
     """Gespeicherter Wert oder „“."""
     if windows():
@@ -986,9 +1178,10 @@ def geheimnis_speichern(dienst, konto, wert):
         return bool(_linux_geheimnis("speichern", dienst, konto, wert))
     if not mac():
         return False
-    befehl = f'add-generic-password -U -a "{konto}" -s "{dienst}" -w "{wert}"'
+    befehl = (f'add-generic-password -U -a "{_security_quote(konto)}" -s "{_security_quote(dienst)}" '
+              f'-w "{_security_quote(wert)}"')
     if (eigener := os.environ.get("ANTON_SCHLUESSELBUND", "")):
-        befehl += f' "{eigener}"'
+        befehl += f' "{_security_quote(eigener)}"'
     return _security("-i", eingabe=befehl + "\n").returncode == 0
 
 

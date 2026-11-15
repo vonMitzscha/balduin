@@ -13,9 +13,9 @@ symlinks = {"Programme": "/Applications"}         # der Finder zeigt den Ordner 
 icon = os.path.join(hier, "Balduin.icns")
 badge_icon = None
 background = os.path.join(hier, "hintergrund.png")   # hintergrund@2x.png daneben wird für Retina mitgenommen
-window_rect = ((200, 160), (660, 420))
+window_rect = ((200, 160), (720, 540))
 default_view = "icon-view"
 show_status_bar = show_tab_view = show_toolbar = show_pathbar = show_sidebar = False
-icon_size = 128
+icon_size = 128                                     # wie SYMBOL in hintergrund_zeichnen.py
 text_size = 13
-icon_locations = {os.path.basename(app): (170, 200), "Programme": (490, 200)}
+icon_locations = {os.path.basename(app): (300, 150), "Programme": (610, 150)}

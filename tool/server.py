@@ -2124,8 +2124,9 @@ class Erfassung:
             z = con.execute("SELECT pid, status FROM lauf WHERE lauf_id = ?", (lauf_id,)).fetchone()
         finally:
             con.close()
-        if z and z["status"] in ("wartet", "läuft"):
-            system.unterbrechen(z["pid"])
+        pid = z["pid"] if z and z["status"] in ("wartet", "läuft") else None
+        if pid:
+            system.unterbrechen(pid)
 
         def marke():                                     # für die Wache, die Anzeige und falls der Lauf noch nicht lief
             ende = time.monotonic() + 120
@@ -2133,11 +2134,46 @@ class Erfassung:
                 try:
                     with self.bestand.schreibend() as con:
                         con.execute("UPDATE lauf SET abbrechen = 1 WHERE lauf_id = ?", (lauf_id,))
-                    return
+                    break
                 except sqlite3.OperationalError:
                     time.sleep(0.5)
+            if pid:
+                self.hart_beenden(lauf_id, pid)
         threading.Thread(target=marke, daemon=True).start()
         return {"ok": True}
+
+    HART_NACH = 60          # Sekunden nach „Abbrechen“, bis ein Lauf hart beendet wird (Entscheidung 14.11.2026)
+
+    def hart_beenden(self, lauf_id, pid):
+        """Rückfall: Hält der Lauf HART_NACH Sekunden nach „Abbrechen“ nicht an (er wartet etwa nach dem Ruhezustand
+        ewig auf den Datenträger), wird er samt den Programmen, die er gestartet hat, beendet. Lauf und laufender
+        Schritt gelten dann als abgebrochen; Gespeichertes bleibt, „Fortsetzen“ macht mit dem Rest weiter."""
+        ende = time.monotonic() + self.HART_NACH
+        while time.monotonic() < ende:
+            if not self.lebt(pid):
+                return
+            time.sleep(min(1.0, self.HART_NACH / 10))
+        con = self.bestand.verbinden()
+        try:
+            z = con.execute("SELECT pid, status FROM lauf WHERE lauf_id = ?", (lauf_id,)).fetchone()
+        finally:
+            con.close()
+        if not z or z["status"] != "läuft" or z["pid"] != pid or not system.beenden(pid):
+            return
+        jetzt = time.strftime("%Y-%m-%dT%H:%M:%S")
+        for _ in range(240):                             # die Datenbank kann kurz gesperrt sein
+            try:
+                with self.bestand.schreibend() as con:
+                    con.execute("UPDATE lauf SET status = 'abgebrochen', ende = ?, meldung = ? "
+                                "WHERE lauf_id = ? AND status = 'läuft'",
+                                (jetzt, "Der Lauf reagierte nicht auf „Abbrechen“ und wurde beendet. Gespeichertes "
+                                        "bleibt; „Fortsetzen“ macht mit dem Rest weiter.", lauf_id))
+                    con.execute("UPDATE lauf_schritt SET status = 'abgebrochen', ende = ? "
+                                "WHERE lauf_id = ? AND status = 'läuft'", (jetzt, lauf_id))
+                break
+            except sqlite3.OperationalError:
+                time.sleep(0.5)
+        self.weiter()                                    # der nächste eingereihte Lauf
 
     def anton_starten(self, modus="", seit=None):
         """Lauf „Bestand aus Anton holen“ (G5b über die API, danach G5c für alle Platten) in die Warteschlange.

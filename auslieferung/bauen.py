@@ -31,6 +31,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -40,7 +41,7 @@ CODE = HIER.parent
 
 # Was vom Code ins Paket geht (Ordner mit „/“); Tests, Werkzeuge und Docs bleiben draußen
 KOPIEREN = ["erfassung/", "vorlauf/", "export/", "tool/", "vorgaben/", "LICENSE", "LIZENZ-ZUSATZ.md", "LICENSES/",
-            "REUSE.toml", "README.md", "requirements.txt", "modelle/LIESMICH.md"]
+            "REUSE.toml", "README.md", "requirements.txt", "modelle/README.md"]
 CODE_ORDNER = ["erfassung", "vorlauf", "export", "tool"]
 
 PLATTFORMEN = {                                  # Name: (Ziel von python-build-standalone, Name im Paket)
@@ -124,10 +125,19 @@ def melden(text):
     print(f"▸ {text}", flush=True)
 
 
-def ausfuehren(befehl, **k):
+def ausfuehren(befehl, versuche=1, **k):
+    """Befehl ausführen; `versuche` > 1 für Befehle mit Netz (go install), die an kurzen Ausfällen scheitern können."""
     print("  $", " ".join(map(str, befehl)), flush=True)
     k.setdefault("stdin", subprocess.DEVNULL)        # nie auf eine Eingabe warten (dylibbundler fragt sonst endlos)
-    subprocess.run([str(b) for b in befehl], check=True, **k)
+    for versuch in range(1, versuche + 1):
+        try:
+            subprocess.run([str(b) for b in befehl], check=True, **k)
+            return
+        except subprocess.CalledProcessError:
+            if versuch == versuche:
+                raise
+            print(f"  Fehlgeschlagen, neuer Versuch {versuch + 1} von {versuche} …", flush=True)
+            time.sleep(10 * versuch)
 
 
 def plattform_hier():
@@ -265,7 +275,7 @@ def werkzeuge_einrichten(ziel, plattform, ablage):
             raise SystemExit("Go fehlt (Siegfried wird auf dem Mac für die Architektur gebaut)")
         for teil in ("sf", "roy"):
             ausfuehren(["go", "install", f"github.com/richardlehane/siegfried/cmd/{teil}@{SIEGFRIED_VERSION}"],
-                       env={**os.environ, "GOBIN": str(bin_), "CGO_ENABLED": "0"})
+                       versuche=4, env={**os.environ, "GOBIN": str(bin_), "CGO_ENABLED": "0"})
     else:
         auspacken(laden("siegfried", plattform, ablage), tmp / "sf")
         for teil in ("sf", "roy"):

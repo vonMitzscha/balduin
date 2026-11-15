@@ -25,7 +25,7 @@ Baduin herunterladen, im Browser öffnen, Datenträger anhängen, lesend Analyse
 
 Derzeit setzt Balduin voraus, dass Ihr Archiv das Archivinformationssystem Anton verwendet, welches ebenfalls komplett im Browser läuft. Sie kennen Anton noch nicht? [Ein Blick lohnt sich!](https://anton.ch)
 
-Balduin ist das Produkt einer Zusammenarbeit mit Kränzle & Ritter und der generösen Zeit als Scholar in Residence der Stiftung Eisenbibliothek der Firma Georg Fischer in Schaffhausen. Beiden sei an dieser Stelle herzlich für die Unterstützung gedankt! 
+Balduin ist das Produkt einer Zusammenarbeit mit [Kränzle & Ritter](https://k-r.ch) und der generösen Zeit als Scholar in Residence der [Stiftung Eisenbibliothek](https://www.eisenbibliothek.ch) der Firma Georg Fischer in Schaffhausen. Beiden sei an dieser Stelle herzlich für die Unterstützung gedankt! 
 <p align="left">
   <a href="https://www.eisenbibliothek.ch">
     <picture>
@@ -62,9 +62,13 @@ Balduin ist das Produkt einer Zusammenarbeit mit Kränzle & Ritter und der gener
 
 ## 🧭 Wie und wo anfangen?
 
-- 🧚🏻‍♀️ [**Ich bin Archivar:in und möchte Balduin nutzen →**](#archivarinnen)
-- 🧑🏽‍💻 [**Ich bin Entwickler:in und möchte zu Balduin beitragen oder die App adaptieren →**](#entwicklerinnen)
-- 🐘 [**Ich bin hier, weil ich den Elefanten süß finde →**](#elefant)
+<p align="center">
+  <a href="#archivarinnen"><kbd>&nbsp;<br>&nbsp;🧚🏻‍♀️&nbsp;<b>Ich bin Archivar:in</b>&nbsp;<br>&nbsp;und möchte Balduin nutzen →&nbsp;<br>&nbsp;</kbd></a>
+  &nbsp;
+  <a href="#entwicklerinnen"><kbd>&nbsp;<br>&nbsp;🧑🏽‍💻&nbsp;<b>Ich bin Entwickler:in</b>&nbsp;<br>&nbsp;und möchte beitragen oder adaptieren →&nbsp;<br>&nbsp;</kbd></a>
+  &nbsp;
+  <a href="#elefant"><kbd>&nbsp;<br>&nbsp;🐘&nbsp;<b>Ich bin hier,</b>&nbsp;<br>&nbsp;weil ich den Elefanten süß finde →&nbsp;<br>&nbsp;</kbd></a>
+</p>
 
 <a id="archivarinnen"></a>
 
@@ -116,8 +120,9 @@ erkennt beschädigte Downloads, ersetzt aber keine Signatur.
 ### 🚀 Installieren und starten
 
 - **Mac:** dmg öffnen, Balduin in den Ordner „Programme“ ziehen. Die Fassung ist noch nicht von Apple beglaubigt:
-  beim ersten Start mit Rechtsklick › „Öffnen“ starten; meldet macOS eine Sperre, unter Systemeinstellungen ›
-  Datenschutz & Sicherheit „Dennoch öffnen“ wählen. Balduin läuft danach mit einem Symbol im Dock.
+  beim ersten Start meldet macOS „„Balduin“ nicht geöffnet“; die Meldung mit „Fertig“ schließen, dann unter
+  Systemeinstellungen › Datenschutz & Sicherheit im Abschnitt „Sicherheit“ „Dennoch öffnen“ wählen und mit dem
+  Passwort bestätigen. Balduin läuft danach mit einem Symbol im Dock.
 - **Windows:** Installer ausführen. Er ist noch nicht signiert; meldet Windows „Der Computer wurde durch Windows
   geschützt“, über „Weitere Informationen“ › „Trotzdem ausführen“ fortfahren. Balduin läuft danach mit einem Symbol
   im Infobereich.
@@ -200,17 +205,17 @@ Ausführlich, auch für Linux: [EINRICHTUNG.md](EINRICHTUNG.md).
 
 ```bash
 .venv/bin/python -m pytest                       # alle Tests
-.venv/bin/python -m pytest -m "not integration"  # nur die schnellen
+.venv/bin/python -m pytest -m "not integration"  # ohne die Tests, die Läufe und Server starten (siehe tests/LIESMICH.md)
 ```
 
 Kein Test berührt echte Datenträger oder eine echte Anton-Instanz: Eine Schutzwache sperrt Zugriffe auf
-eingehängte Datenträger, Anton wird lokal nachgebaut. Mehr in [tests/LIESMICH.md](tests/LIESMICH.md).
+eingehängte Datenträger, Anton wird lokal nachgebaut. Mehr in [tests/README.md](tests/README.md).
 
 ### 📦 Bauen
 
 `auslieferung/bauen.py` baut je System einen Programmordner mit eigenem Python, Werkzeugen und Modellen und daraus
 das Paket (dmg, Installer, tar.gz). Der Workflow `.github/workflows/auslieferung.yml` baut alle Systeme bei einem
-Tag `v*`. Einzelheiten: [auslieferung/LIESMICH.md](auslieferung/LIESMICH.md).
+Tag `v*`. Einzelheiten: [auslieferung/README.md](auslieferung/README.md).
 
 ```bash
 python auslieferung/bauen.py               # Paket für das laufende System
@@ -226,7 +231,7 @@ python auslieferung/bauen.py --nur-ordner  # nur den Programmordner
 | `vorlauf/` | Rechencode des Vorlaufs |
 | `export/` | Rechencode von Modul 4: Pakete bauen und prüfen, Lieferschein |
 | `vorgaben/` | Regeltabellen, Schema des Anton-Importformats, NARA Digital Preservation Framework |
-| `modelle/` | Modelle der Bildanalyse (nicht im Repo; Herkunft und Lizenz in `modelle/LIESMICH.md`) |
+| `modelle/` | Modelle der Bildanalyse (nicht im Repo; Herkunft und Lizenz in `modelle/README.md`) |
 | `werkzeuge/` | Hilfsskripte: Testplatten, Modelle und NARA-Daten laden |
 | `auslieferung/` | Bau der Pakete für Mac, Windows und Linux |
 | `tests/` | automatische Tests mit pytest |

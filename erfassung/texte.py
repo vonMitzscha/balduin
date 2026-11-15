@@ -393,7 +393,7 @@ def texte_lesen(platte_id, wurzel):
     platz_pruefen(0.5)
     print(f"Offen: {len(offen):,} Dokumente " + ", ".join(f"{e} {n}" for e, n in offen.endung.value_counts().items()))
     erledigt = mit_text = fehler = 0
-    start = time.monotonic()
+    schaetzer = Restzeit(len(offen))
     unterbrochen = False
     sql = """INSERT OR REPLACE INTO volltext (sha256, endung, text, zeichen, seiten, weg, titel, fehler, gelesen_am, quelle)
              VALUES (?,?,?,?,?,?,?,?,?,?)"""
@@ -416,9 +416,8 @@ def texte_lesen(platte_id, wurzel):
                 erledigt += 1
                 if erledigt % 20 == 0:
                     con.commit()
-                    minuten = (time.monotonic() - start) / 60
                     fortschritt(erledigt / len(offen), f"{erledigt:,}/{len(offen):,} Dokumente · "
-                                f"{restzeit(minuten / erledigt * (len(offen) - erledigt))}")
+                                f"{schaetzer.text(erledigt)}")
         except KeyboardInterrupt:
             unterbrochen = True
     protokolliere("E4", platte_id, "texte", "", f"{erledigt} Dokumente, {mit_text} mit Text, {fehler} nicht lesbar"

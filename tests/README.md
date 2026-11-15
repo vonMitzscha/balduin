@@ -6,13 +6,15 @@ Die Tests prüfen bei jeder Änderung, ob Balduin noch tut, was es zusagt. Was B
 
 ```sh
 .venv/bin/python -m pip install -r requirements-entwicklung.txt     # einmalig, bringt pytest mit
-.venv/bin/python -m pytest                              # alle Tests, rund 30 s
-.venv/bin/python -m pytest -m "not integration"         # nur die schnellen, ohne Testplatten (rund 6 s)
+.venv/bin/python -m pytest                              # alle Tests
+.venv/bin/python -m pytest -m "not integration"         # ohne die Tests, die Läufe und Server starten
 .venv/bin/python -m pytest tests/test_bewertung.py -x   # eine Datei, beim ersten Fehler anhalten
 BALDUIN_TESTS_BEHALTEN=1 .venv/bin/python -m pytest     # Testprojekte nach dem Lauf zum Nachsehen behalten
 ```
 
 Die Integrationstests brauchen Siegfried und ExifTool (`brew install siegfried exiftool`). Fehlen die Werkzeuge, werden diese Tests übersprungen, nicht als Fehler gezählt.
+
+Zur Laufzeit: Sind Siegfried und ExifTool installiert, baut die gemeinsame Fixture `analysiert` (`conftest.py`) die Testplatten und fährt HD01/HD02 einmal durch B–I. Daran hängen auch viele Tests, die nicht als `integration` markiert sind (über die Fixtures `projekt` und `balduin`), weil der Marker an den einzelnen Tests steht, nicht an der Fixture. `-m "not integration"` lässt deshalb nur die ausdrücklich so markierten Tests weg, baut aber weiterhin die Testplatten und braucht Siegfried und ExifTool; der Lauf dauert dann einige Minuten (auf einem aktuellen Mac rund 2 Minuten, die volle Suite rund 5). Nur ohne die beiden Werkzeuge überspringt die Fixture alles und es laufen allein die reinen Unit-Tests – dann sind es wenige Sekunden.
 
 ## Sicherheit
 

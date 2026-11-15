@@ -361,7 +361,8 @@ def anton_abrufen(datum):
         if frueher != zwischen:
             shutil.rmtree(frueher)
     zwischen.mkdir(exist_ok=True)
-    seite, letzte, start, geholt = 1, -(-gesamt // ANTON_JE_SEITE), time.time(), 0
+    seite, letzte, geholt = 1, -(-gesamt // ANTON_JE_SEITE), 0
+    schaetzer = Restzeit(letzte)
     while seite <= letzte:
         teil, ids = zwischen / f"seite_{seite:04d}.csv", zwischen / f"seite_{seite:04d}.ids"
         if not ids.exists():
@@ -377,8 +378,8 @@ def anton_abrufen(datum):
             pd.DataFrame(zeilen, columns=ANTON_API_SPALTEN).to_csv(teil, index=False, encoding="utf-8")
             ids.write_text("\n".join(str(o["id"]) for o in antwort["data"]), encoding="utf-8")   # zuletzt: Seite gilt erst dann als fertig
             geholt += 1
-            rest = (letzte - seite) * (time.time() - start) / geholt / 60
-            fortschritt(seite / letzte, f"Seite {seite} von {letzte} geholt · {restzeit(rest)}")
+            schaetzer.gesamt = geholt + letzte - seite          # schon geholte Seiten zählen nicht zum Tempo
+            fortschritt(seite / letzte, f"Seite {seite} von {letzte} geholt · {schaetzer.text(geholt)}")
         seite += 1
     print()
 

@@ -229,6 +229,7 @@ def virenscan(platte_id, wurzel, parallel=4, medien=True, max_mb=2048, neu=False
         angeschlossene_platte_pruefen(platte_id, wurzel)
         print(f"Prüfe mit {stand}, {parallel} Dateien zugleich …")
     start = letzte = time.monotonic()
+    schaetzer = Restzeit(gesamt)
     with open(logdatei, "w", encoding="utf-8") as log, db() as con:
         clamd = Clamd(parallel, log) if len(pruefen) else None
         pool = ThreadPoolExecutor(parallel)
@@ -265,9 +266,9 @@ def virenscan(platte_id, wurzel, parallel=4, medien=True, max_mb=2048, neu=False
                         if time.monotonic() - letzte > 2:
                             con.commit()
                             letzte = time.monotonic()
-                            tempo = volumen / max(letzte - start, 0.001)
-                            fortschritt(volumen / gesamt, f"{erledigt:,}/{len(pruefen):,} Inhalte · {tempo / 1e6:.0f} MB/s · "
-                                        f"{restzeit((gesamt - volumen) / max(tempo, 1) / 60)} · Funde {zaehler['Fund']}")
+                            rest = schaetzer.text(volumen)
+                            fortschritt(volumen / gesamt, f"{erledigt:,}/{len(pruefen):,} Inhalte · "
+                                        f"{schaetzer.tempo / 1e6:.0f} MB/s · {rest} · Funde {zaehler['Fund']}")
         except KeyboardInterrupt:
             unterbrochen = True
         finally:

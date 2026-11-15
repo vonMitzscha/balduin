@@ -50,11 +50,14 @@ Neue Projekte schlägt Balduin im Paket unter `Dokumente/Balduin-Projekte` vor (
 - **Icon Composer** (macOS 26, Liquid Glass): Liegt `mac/Balduin.icon` vor, übersetzt der Bau sie mit `actool` in
   `Assets.car`; `Balduin.icns` bleibt Rückfall für ältere Systeme. Als Vordergrund-Ebene dient
   `mac/symbol_ebenen/elefant.png` (freigestellt), der Hintergrund wird in Icon Composer als Farbe gesetzt.
-- `mac/hintergrund.png` und `@2x`: Hintergrund der dmg, gezeichnet von `mac/hintergrund_zeichnen.py`; die Lage der
-  Symbole steht dort und in `mac/dmg_einstellungen.py`.
+- `mac/hintergrund.png` und `@2x`: Hintergrund der dmg, gezeichnet von `mac/hintergrund_zeichnen.py`: weißer Grund,
+  dahinter blass der ganze Elefant (`mac/symbol_ebenen/elefant_ganz.png`), dessen Kopf genau unter dem Kopf im
+  Symbol liegt. Lage und Größe der Symbole stehen dort und in `mac/dmg_einstellungen.py` und müssen übereinstimmen;
+  ändert sich das Symbol, sind `IM_SYMBOL_MASSSTAB` und `IM_SYMBOL_ECKE` neu zu bestimmen.
 
 ## Signatur
 
-Noch ohne Signatur: Mac nur ad hoc signiert (erster Start über Rechtsklick › „Öffnen“), Windows ohne
+Noch ohne Signatur: Mac nur ad hoc signiert (erster Start über Systemeinstellungen › Datenschutz & Sicherheit ›
+„Dennoch öffnen“; seit macOS 15 genügt Rechtsklick › „Öffnen“ nicht mehr, der Hintergrund der dmg zeigt den Weg), Windows ohne
 Code-Signing (SmartScreen-Hinweis). Mit einer Apple Developer ID bzw. einem Windows-Zertifikat kommen Signatur und
 Beglaubigung als weitere Schritte in `bauen.py` hinzu.

@@ -700,10 +700,11 @@ function zeitraumSetzen(von, bis, caVon, caBis) {
 }
 function datumFelder(seite, text, ca) {
   const [t, m, j] = datumTeile(text);
+  const frei = seite === "bis" ? " data-freiwillig" : "";   // Pflicht ist nur „von“ (kein roter Rahmen um „bis“)
   return `<label class="es-ca"><span>ca.</span><input type="checkbox" id="es-ca-${seite}" ${ca ? "checked" : ""}></label>
-    <input class="es-tag" id="es-${seite}-t" value="${esc(t)}" placeholder="T" inputmode="numeric" aria-label="Tag">.
-    <input class="es-tag" id="es-${seite}-m" value="${esc(m)}" placeholder="M" inputmode="numeric" aria-label="Monat">.
-    <input class="es-jahr" id="es-${seite}-j" value="${esc(j)}" placeholder="JJJJ" inputmode="numeric" aria-label="Jahr">`;
+    <input class="es-tag" id="es-${seite}-t" value="${esc(t)}" placeholder="T" inputmode="numeric" aria-label="Tag"${frei}>.
+    <input class="es-tag" id="es-${seite}-m" value="${esc(m)}" placeholder="M" inputmode="numeric" aria-label="Monat"${frei}>.
+    <input class="es-jahr" id="es-${seite}-j" value="${esc(j)}" placeholder="JJJJ" inputmode="numeric" aria-label="Jahr"${frei}>`;
 }
 
 // ---- Zustand je Feld: Häkchen (gefüllt und gültig), Warnung (gefüllt, aber nicht gültig), leerer Kreis ----
@@ -868,7 +869,7 @@ function editorZeichnen() {
   // Titel: beim Ordner der Titel des Ordners und der Zusatz je Datei fürs Vererben; bei Mehrfachauswahl je Datei
   const jeTeil = ordner || !a.einzeln;
   const titel = `<input id="es-titel" value="${esc(f.titel.eigen?.gleich || "")}" placeholder="${a.einzeln ? "" : `für alle ${zahl(a.ziele.length)} gleich`}">
-    ${jeTeil ? `<div class="es-je"><label>${ordner ? "Zusatz je Datei beim Vererben" : "Zusatz je Datei"}<input id="es-titel-je" value="${esc(f.titel.eigen?.je_datei || "")}" placeholder="z. B. – Nr. {laufnummer}"></label>
+    ${jeTeil ? `<div class="es-je"><label>${ordner ? "Zusatz je Datei beim Vererben" : "Zusatz je Datei"}<input id="es-titel-je" value="${esc(f.titel.eigen?.je_datei || "")}" placeholder="z. B. – Nr. {laufnummer}"${ordner ? " data-freiwillig" : ""}></label>
       <span class="es-bausteine leise">${["{laufnummer}", "{datum}", "{dateiname}"].map((b) => `<button type="button" class="knopf-leise" data-baustein="${b}">${b}</button>`).join("")}</span></div>` : ""}
     <div class="es-zeile-fuss">${llmKnopf}</div>
     ${vorschlaegeHtml("titel")}${darueberText("titel")}${beispiele(f.titel)}`;
