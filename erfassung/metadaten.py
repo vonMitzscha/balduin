@@ -171,7 +171,15 @@ class ExifTool:
                                         errors="replace")
 
     def lesen(self, pfade):
-        self.prozess.stdin.write("\n".join(EXIF_ARGUMENTE + pfade) + "\n-execute\n")
+        # Argument-Injektion in ExifTools Argumentdatei verhindern (harte Regel 1 „Quellen nur lesen“): ExifTool liest
+        # den -@-Strom zeilenweise und deutet jede Zeile, die mit „-“ beginnt, als Option. Ein Dateiname mit
+        # Zeilenumbruch (auf macOS, HFS+/APFS, erlaubt) könnte so Schreib-Optionen unterschieben und eine Quelldatei
+        # verändern. Solche Pfade gehen nicht an ExifTool (wie bei Siegfried, formate.py); die betroffenen Dateien
+        # gelten dann als „von ExifTool nicht gelesen“. Die Absicherung sitzt hier an der Senke, nicht nur im Aufrufer.
+        sicher = [p for p in pfade if "\n" not in p and "\r" not in p]
+        if not sicher:
+            return []
+        self.prozess.stdin.write("\n".join(EXIF_ARGUMENTE + sicher) + "\n-execute\n")
         self.prozess.stdin.flush()
         zeilen = []
         while (zeile := self.prozess.stdout.readline()).strip() != "{ready}":

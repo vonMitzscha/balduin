@@ -828,6 +828,26 @@ def test_metadaten_ordnet_antworten_mit_schraegstrich_zu():
     assert metadaten.antworten_zuordnen(pfade, antworten, ntpath) == {"Müller/a.jpg": antworten[0]}
 
 
+def test_exiftool_schleust_dateinamen_mit_zeilenumbruch_nicht_als_option_ein():
+    """Harte Regel 1 (Quellen nur lesen): ExifTool liest den -@-Strom zeilenweise und deutet Zeilen mit „-“ als
+    Optionen. Ein Dateiname mit Zeilenumbruch darf deshalb keine (Schreib-)Option unterschieben; solche Pfade gehen
+    nicht an ExifTool. Hier ohne echtes ExifTool geprüft: Was in den Strom geschrieben wird, wird abgefangen."""
+    from types import SimpleNamespace
+    from erfassung.metadaten import ExifTool
+    geschrieben = []
+    prozess = SimpleNamespace(
+        stdin=SimpleNamespace(write=geschrieben.append, flush=lambda: None),
+        stdout=SimpleNamespace(readline=lambda: "{ready}\n"))
+    et = ExifTool.__new__(ExifTool)                      # ohne __init__: kein echtes ExifTool starten
+    et.prozess = prozess
+    boese = "/Quelle/Foto\n-overwrite_original\n-Artist=weg\n.jpg"
+    et.lesen(["/Quelle/harmlos.jpg", boese])
+    strom = "".join(geschrieben)
+    assert "-overwrite_original" not in strom           # keine eingeschleuste Schreib-Option
+    assert "\n-Artist=weg" not in strom
+    assert "/Quelle/harmlos.jpg" in strom               # harmlose Datei wird weiterhin gelesen
+
+
 def test_code_ohne_syntaxwarnungen():
     """Ungültige Escape-Sequenzen (z. B. „\\P“ in einem Docstring) meldet Python nur beim ersten Übersetzen; auf dem
     Mac fiel es wegen der .pyc-Dateien nicht auf, in der Windows-VM schon (12.11.2026)."""
