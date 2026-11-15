@@ -200,7 +200,7 @@ Ausführlich, auch für Linux: [EINRICHTUNG.md](EINRICHTUNG.md).
 
 ```bash
 .venv/bin/python -m pytest                       # alle Tests
-.venv/bin/python -m pytest -m "not integration"  # nur die schnellen
+.venv/bin/python -m pytest -m "not integration"  # ohne die Tests, die Läufe und Server starten (siehe tests/LIESMICH.md)
 ```
 
 Kein Test berührt echte Datenträger oder eine echte Anton-Instanz: Eine Schutzwache sperrt Zugriffe auf
