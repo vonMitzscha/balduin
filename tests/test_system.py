@@ -807,6 +807,30 @@ def test_datentraeger_info_unter_windows_nur_fuer_die_wurzel_eines_laufwerks(win
     assert system.datentraeger_info("E:\\Fotos") == {}
 
 
+def test_security_quote_maskiert_backslash_und_anfuehrungszeichen():
+    """Für `security -i`: Backslash und Anführungszeichen maskieren (Backslash zuerst). Ohne das bricht ein Token mit
+    `"` oder `\\` aus der Quotierung aus und wird nicht gespeichert."""
+    assert system._security_quote('ab"cd\\ef') == 'ab\\"cd\\\\ef'
+    assert system._security_quote("ohne Sonderzeichen") == "ohne Sonderzeichen"
+
+
+@pytest.mark.skipif(sys.platform != "darwin", reason="Schlüsselbund über security (macOS)")
+def test_geheimnis_auf_macos_vertraegt_sonderzeichen_im_token(tmp_path, monkeypatch):
+    """Ein Anton-Token mit `"` oder `\\` muss sich im Schlüsselbund ablegen und unverändert zurücklesen lassen.
+    Gegen einen eigenen Wegwerf-Schlüsselbund; der Schlüsselbund des Rechners wird nie berührt."""
+    kc = tmp_path / "test.keychain"
+    subprocess.run(["security", "create-keychain", "-p", "", str(kc)], check=True, capture_output=True)
+    monkeypatch.setenv("ANTON_SCHLUESSELBUND", str(kc))
+    try:
+        token = 'ab"cd\\ef'                                   # Anführungszeichen und Backslash
+        assert system.geheimnis_speichern("Anton-API test", "ak", token) is True
+        assert system.geheimnis_lesen("Anton-API test") == token
+        assert system.geheimnis_vorhanden("Anton-API test") is True
+        assert system.geheimnis_entfernen("Anton-API test") is True
+    finally:
+        subprocess.run(["security", "delete-keychain", str(kc)], capture_output=True)
+
+
 def test_pfad_schluessel_gleicht_trenner_und_schreibweise_an():
     """ExifTool meldet SourceFile unter Windows mit „/“ (C:/Users/…); Balduin übergibt „\\“. Ohne Angleichen fand E1
     keine Antwort, und jede Datei galt als „von ExifTool nicht gelesen“ (Windows-VM, 12.11.2026)."""

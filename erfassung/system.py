@@ -957,6 +957,13 @@ def _security(*befehl, eingabe=None):
                           input=eingabe, capture_output=True, text=True, timeout=30)
 
 
+def _security_quote(wert):
+    """Maskiert einen Wert für die in Anführungszeichen stehenden Argumente der Argumentliste von `security -i`:
+    Backslash und Anführungszeichen. Ohne das bricht ein Token mit `"` oder `\\` aus der Quotierung aus; `security`
+    lehnt den Befehl dann ab (Exit-Code 2) und der Token wird nicht abgelegt. Backslash zuerst, dann das Zitatzeichen."""
+    return wert.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def geheimnis_lesen(dienst):
     """Gespeicherter Wert oder „“."""
     if windows():
@@ -986,9 +993,10 @@ def geheimnis_speichern(dienst, konto, wert):
         return bool(_linux_geheimnis("speichern", dienst, konto, wert))
     if not mac():
         return False
-    befehl = f'add-generic-password -U -a "{konto}" -s "{dienst}" -w "{wert}"'
+    befehl = (f'add-generic-password -U -a "{_security_quote(konto)}" -s "{_security_quote(dienst)}" '
+              f'-w "{_security_quote(wert)}"')
     if (eigener := os.environ.get("ANTON_SCHLUESSELBUND", "")):
-        befehl += f' "{eigener}"'
+        befehl += f' "{_security_quote(eigener)}"'
     return _security("-i", eingabe=befehl + "\n").returncode == 0
 
 
